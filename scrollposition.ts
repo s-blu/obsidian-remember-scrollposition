@@ -1,22 +1,14 @@
-import { MarkdownView } from "obsidian";
-
 
 export class RememberScrollposition {
   scrollingDebounce: NodeJS.Timeout;
 
-  static saveScrollPosition(app, data, callback) {
+  static saveScrollPosition(view, data, callback) {
     console.log("Scrolling has stopped.");
-    const view = app.workspace.getActiveViewOfType(MarkdownView);
-    if (view?.file) {
-      const lastPosition = view.editor.getScrollInfo()?.top ?? 0;
-      RememberScrollposition.saveScrollPositionToData(data, view.file.path, lastPosition, callback)
-    }
-  }
+    if (!view?.file) return;
 
-  // TODO extract interfaces and type data correctly
-  static async saveScrollPositionToData(data: any, filepath: string, scrollposition: number, callback) {
-    console.log('save scroll pos', filepath, scrollposition)
-		const now = Date.now();
+    const filepath = view.file.path;
+    const scrollposition = view.editor.getScrollInfo()?.top ?? 0;
+    const now = Date.now();
 		const existingPos = data.scrollpositions.find(p => p.path === filepath);
 
 		if (existingPos) {
@@ -31,7 +23,7 @@ export class RememberScrollposition {
 		}
 
 		callback(data);
-	}
+  }
 
   static restoreScrollposition(view, lastPosition: number) {
     const currentScrollPosition =

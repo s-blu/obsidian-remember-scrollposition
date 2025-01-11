@@ -48,7 +48,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
 			window.clearTimeout(scrollingDebounce);
 
 			scrollingDebounce = setTimeout(() => {
-				RememberScrollposition.saveScrollPosition(this.app, this.data, async (modifiedData) => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				RememberScrollposition.saveScrollPosition(view, this.data, async (modifiedData) => {
 					this.data = modifiedData;
 					await this.saveData(this.data);
 					console.log('saved modified data', this.data)
