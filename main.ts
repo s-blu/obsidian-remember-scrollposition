@@ -10,8 +10,20 @@ const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
 	mySetting: "default", // TODO
 };
 
+interface RememberScrollpositionPluginData {
+	settings: RememberScrollpositionPluginSettings;
+	scrollpositions: RememberScrollpositionPluginItem[];
+}
+
+interface RememberScrollpositionPluginItem {
+	path: string;
+	scrollposition: number;
+	updated: number;
+}
+
 export default class RememberScrollpositionPlugin extends Plugin {
 	settings: RememberScrollpositionPluginSettings;
+	data: RememberScrollpositionPluginData;
 
 	async onload() {
 		await this.loadSettings();
@@ -24,21 +36,22 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
 		// TODO register event on document.querySelector(".cm-editor.cm-focused .cm-scroller")
 
-		let isScrolling;
+		let scrollingDebounce: NodeJS.Timeout;
 		this.registerDomEvent(document, "wheel", (event: any) => {
-			console.log("wheel", event);
-
 			// Clear our timeout throughout the scroll
-			window.clearTimeout(isScrolling);
+			window.clearTimeout(scrollingDebounce);
 
 			// Set a timeout to run after scrolling ends
-			isScrolling = setTimeout(function () {
+			scrollingDebounce = setTimeout(() => {
 				// Run the callback
 				console.log("Scrolling has stopped.");
 				const view =
 					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) lastPosition = view.editor.getScrollInfo()?.top ?? 0;
-			}, 66);
+				if (view?.file) {
+					lastPosition = view.editor.getScrollInfo()?.top ?? 0;
+					this.saveScrollPosition(view.file.path, lastPosition)
+				}
+			}, 200); // TODO figure out a good timeout time
 		});
 
 		// When focusing a leaf, restore its saved scroll position
@@ -85,6 +98,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
 		// TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
 		// TODO be able to exclude or include certain paths for saving only
 
+		// TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
+
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(
 			window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
@@ -92,6 +107,27 @@ export default class RememberScrollpositionPlugin extends Plugin {
 	}
 
 	onunload() {}
+
+	async saveScrollPosition(filepath: string, scrollposition: number) {
+		this.data = (await this.loadData()) ?? {
+			scrollpositions: []
+		}
+		const now = Date.now();
+		const existingPos = this.data.scrollpositions.find(p => p.path === filepath);
+
+		if (existingPos) {
+			existingPos.scrollposition = scrollposition;
+			existingPos.updated = now;
+		} else {
+			this.data.scrollpositions.push({
+				path: filepath,
+				scrollposition,
+				updated: now
+			});
+		}
+
+		await this.saveData(this.data);
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign(
@@ -105,45 +141,3 @@ export default class RememberScrollpositionPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 }
-
-// class SampleModal extends Modal {
-// 	constructor(app: App) {
-// 		super(app);
-// 	}
-
-// 	onOpen() {
-// 		const {contentEl} = this;
-// 		contentEl.setText('Woah!');
-// 	}
-
-// 	onClose() {
-// 		const {contentEl} = this;
-// 		contentEl.empty();
-// 	}
-// }
-
-// class SampleSettingTab extends PluginSettingTab {
-// 	plugin: MyPlugin;
-
-// 	constructor(app: App, plugin: MyPlugin) {
-// 		super(app, plugin);
-// 		this.plugin = plugin;
-// 	}
-
-// 	display(): void {
-// 		const {containerEl} = this;
-
-// 		containerEl.empty();
-
-// 		new Setting(containerEl)
-// 			.setName('Setting #1')
-// 			.setDesc('It\'s a secret')
-// 			.addText(text => text
-// 				.setPlaceholder('Enter your secret')
-// 				.setValue(this.plugin.settings.mySetting)
-// 				.onChange(async (value) => {
-// 					this.plugin.settings.mySetting = value;
-// 					await this.plugin.saveSettings();
-// 				}));
-// 	}
-// }
