@@ -1,4 +1,4 @@
-import { RememberScrollposition } from "../scrollposition"
+import { RememberScrollposition } from "../src/scrollposition"
 
 describe('RememberScrollposition', () => {
   describe('saveScrollPosition', () => {

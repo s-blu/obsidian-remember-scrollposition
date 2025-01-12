@@ -1,21 +1,19 @@
 import { MarkdownView, Plugin } from "obsidian";
-import { RememberScrollposition } from "scrollposition";
-
-// Remember to rename these classes and interfaces!
+import { RememberScrollposition } from "src/scrollposition";
 
 interface RememberScrollpositionPluginSettings {
-	mySetting: string;
-}
-
-interface RememberScrollpositionPluginData {
-	settings: RememberScrollpositionPluginSettings;
-	scrollpositions: RememberScrollpositionPluginItem[];
+	mySetting: string; // TODO
 }
 
 interface RememberScrollpositionPluginItem {
 	path: string;
 	scrollposition: number;
 	updated: number;
+}
+
+interface RememberScrollpositionPluginData {
+	settings: RememberScrollpositionPluginSettings;
+	scrollpositions: RememberScrollpositionPluginItem[];
 }
 
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
@@ -54,7 +52,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
 					await this.saveData(this.data);
 					console.log('saved modified data', this.data)
 				})
-			}, 200); // TODO figure out a good timeout time
+			}, 350); // TODO figure out a good timeout time
 		});
 
 		// FIXME scrolling via the scrollbar is not detected
