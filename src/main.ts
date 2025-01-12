@@ -17,7 +17,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
 	async onload() {
 		await this.loadPluginData();
-		let lastPosition = 500;
 
 		// TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
 
@@ -37,6 +36,9 @@ export default class RememberScrollpositionPlugin extends Plugin {
 					this.data = modifiedData;
 					await this.saveData(this.data);
 					console.log('saved modified data', this.data)
+					for (const sc of this.data.scrollpositions) {
+						console.log(`${sc.path}: ${sc.scrollposition}`)
+					}
 				})
 			}, 350); // TODO figure out a good timeout time
 		});
@@ -51,7 +53,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
 					this.app.workspace.getActiveViewOfType(MarkdownView);
 
 				if (view) {
-					RememberScrollposition.restoreScrollposition(view, lastPosition)
+					RememberScrollposition.restoreScrollposition(view, this.data)
 				}
 			})
 		);
