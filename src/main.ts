@@ -1,20 +1,6 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { RememberScrollposition } from "src/scrollposition";
-
-interface RememberScrollpositionPluginSettings {
-	mySetting: string; // TODO
-}
-
-interface RememberScrollpositionPluginItem {
-	path: string;
-	scrollposition: number;
-	updated: number;
-}
-
-interface RememberScrollpositionPluginData {
-	settings: RememberScrollpositionPluginSettings;
-	scrollpositions: RememberScrollpositionPluginItem[];
-}
+import { RememberScrollpositionPluginSettings, RememberScrollpositionPluginData } from "./scrollposition.interface";
 
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
 	mySetting: "default", // TODO
