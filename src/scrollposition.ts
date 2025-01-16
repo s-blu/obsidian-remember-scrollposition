@@ -1,10 +1,11 @@
+import { MarkdownView } from "obsidian";
 import { RememberScrollpositionPluginData } from "./scrollposition.interface";
 
 export class RememberScrollposition {
   scrollingDebounce: NodeJS.Timeout;
 
   static saveScrollPosition(
-    view,
+    view: MarkdownView,
     data: RememberScrollpositionPluginData,
     callback: (data: RememberScrollpositionPluginData) => void
   ) {
@@ -32,7 +33,7 @@ export class RememberScrollposition {
     callback(data);
   }
 
-  static restoreScrollposition(view, data: RememberScrollpositionPluginData) {
+  static restoreScrollposition(view: MarkdownView, data: RememberScrollpositionPluginData) {
     if (!view || !data) {
       console.error(
         "restoreScrollposition was called with invalid parameters."
