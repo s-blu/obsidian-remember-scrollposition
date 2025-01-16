@@ -3,93 +3,93 @@ import { RememberScrollposition } from "src/scrollposition";
 import { RememberScrollpositionPluginSettings, RememberScrollpositionPluginData } from "./scrollposition.interface";
 
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
-	mySetting: "default", // TODO
+  mySetting: "default", // TODO
 };
 
 const DEFAULT_DATA: RememberScrollpositionPluginData = {
-	settings: DEFAULT_SETTINGS,
-	scrollpositions: []
+  settings: DEFAULT_SETTINGS,
+  scrollpositions: []
 }
 
 
 export default class RememberScrollpositionPlugin extends Plugin {
-	data: RememberScrollpositionPluginData;
+  data: RememberScrollpositionPluginData;
 
-	async onload() {
-		await this.loadPluginData();
+  async onload() {
+    await this.loadPluginData();
 
-		// TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
+    // TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
 
-		// TODO fetch the info with either getScroll() or `document.querySelector(".cm-editor.cm-focused .cm-scroller").scrollTop`
-		// TODO on exit/close, save the scroll position
+    // TODO fetch the info with either getScroll() or `document.querySelector(".cm-editor.cm-focused .cm-scroller").scrollTop`
+    // TODO on exit/close, save the scroll position
 
-		// TODO register event on document.querySelector(".cm-editor.cm-focused .cm-scroller")
+    // TODO register event on document.querySelector(".cm-editor.cm-focused .cm-scroller")
 
-		let scrollingDebounce: NodeJS.Timeout;
-		this.registerDomEvent(document, "wheel", (event: any) => {
-			// Reset if we get another wheel event in the timeout duration
-			window.clearTimeout(scrollingDebounce);
+    let scrollingDebounce: NodeJS.Timeout;
+    this.registerDomEvent(document, "wheel", (event: any) => {
+      // Reset if we get another wheel event in the timeout duration
+      window.clearTimeout(scrollingDebounce);
 
-			scrollingDebounce = setTimeout(() => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				RememberScrollposition.saveScrollPosition(view, this.data, async (modifiedData) => {
-					this.data = modifiedData;
-					await this.saveData(this.data);
-					console.log('saved modified data', this.data)
-					for (const sc of this.data.scrollpositions) {
-						console.log(`${sc.path}: ${sc.scrollposition}`)
-					}
-				})
-			}, 350); // TODO figure out a good timeout time
-		});
+      scrollingDebounce = setTimeout(() => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        RememberScrollposition.saveScrollPosition(view, this.data, async (modifiedData) => {
+          this.data = modifiedData;
+          await this.saveData(this.data);
+          console.log('saved modified data', this.data)
+          for (const sc of this.data.scrollpositions) {
+            console.log(`${sc.path}: ${sc.scrollposition}`)
+          }
+        })
+      }, 350); // TODO figure out a good timeout time
+    });
 
-		// FIXME scrolling via the scrollbar is not detected
+    // FIXME scrolling via the scrollbar is not detected
 
-		// When focusing a leaf, restore its saved scroll position
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				console.log("active leave changed", leaf);
-				const view =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
+    // When focusing a leaf, restore its saved scroll position
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", (leaf) => {
+        console.log("active leave changed", leaf);
+        const view =
+          this.app.workspace.getActiveViewOfType(MarkdownView);
 
-				if (view) {
-					RememberScrollposition.restoreScrollposition(view, this.data)
-				}
-			})
-		);
+        if (view) {
+          RememberScrollposition.restoreScrollposition(view, this.data)
+        }
+      })
+    );
 
-		this.registerEvent(
-			this.app.vault.on("rename", (file) => {
-				// TODO update path if available in scrollposition data
-			})
-		);
+    this.registerEvent(
+      this.app.vault.on("rename", (file) => {
+        // TODO update path if available in scrollposition data
+      })
+    );
 
-		this.registerEvent(
-			this.app.vault.on("delete", (file) => {
-				// TODO remove path if available in scrollposition data
-			})
-		);
+    this.registerEvent(
+      this.app.vault.on("delete", (file) => {
+        // TODO remove path if available in scrollposition data
+      })
+    );
 
-		// TODO add settings: let the user decide to scroll instantly upon opening or by clicking a ribbon icon
-		// TODO when scrolling instantly, allow disabling the ribbon icon
-		// TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
-		// TODO be able to exclude or include certain paths for saving only
+    // TODO add settings: let the user decide to scroll instantly upon opening or by clicking a ribbon icon
+    // TODO when scrolling instantly, allow disabling the ribbon icon
+    // TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
+    // TODO be able to exclude or include certain paths for saving only
 
-		// TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
+    // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(
-			window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
-		);
-	}
+    // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
+    this.registerInterval(
+      window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
+    );
+  }
 
-	onunload() {}
+  onunload() {}
 
-	async loadPluginData() {
-		this.data = Object.assign(
-			{},
-			DEFAULT_DATA,
-			await this.loadData()
-		);
-	}
+  async loadPluginData() {
+    this.data = Object.assign(
+      {},
+      DEFAULT_DATA,
+      await this.loadData()
+    );
+  }
 }
