@@ -1,6 +1,7 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { RememberScrollposition } from "./scrollposition";
 import { RememberScrollpositionPluginSettings, RememberScrollpositionPluginData } from "./scrollposition.interface";
+import { EditorState, StateEffect, StateField, Transaction } from "@codemirror/state";
 
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
   mySetting: "default", // TODO
@@ -17,7 +18,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
   async onload() {
     await this.loadPluginData();
-
+    this.registerEditorExtension([ScrollpositionField]);
+    
     // TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
 
     // TODO fetch the info with either getScroll() or `document.querySelector(".cm-editor.cm-focused .cm-scroller").scrollTop`
@@ -54,7 +56,11 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const view =
           this.app.workspace.getActiveViewOfType(MarkdownView);
 
-        if (view) {
+        if (view && view.editor.cm) {
+          
+          view.editor.cm.dispatch({
+            effects: [restoreScrollEffect.of(1000)],
+          });
           RememberScrollposition.restoreScrollposition(view, this.data)
         }
       })
@@ -95,3 +101,28 @@ export default class RememberScrollpositionPlugin extends Plugin {
     );
   }
 }
+
+const restoreScrollEffect = StateEffect.define<number>();
+
+export const ScrollpositionField = StateField.define<number>({
+  create(state: EditorState): number {
+    return 0;
+  },
+  update(oldState: number, transaction: Transaction): number {
+    console.log('scroll pos field update called', oldState, transaction)
+
+    let newState = oldState;
+
+    for (const effect of transaction.effects) {
+      if (effect.is(restoreScrollEffect)) {
+        console.log("!!! got a scroll pos effect !!!")
+        newState += effect.value;
+      } else {
+        console.log('effect was not of type restore scroll effect')
+      }
+
+    }
+
+    return newState;
+  },
+});
