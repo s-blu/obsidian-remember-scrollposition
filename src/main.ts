@@ -57,9 +57,14 @@ export default class RememberScrollpositionPlugin extends Plugin {
           this.app.workspace.getActiveViewOfType(MarkdownView);
 
         if (view && view.editor.cm) {
+          const lastPosition = this.data.scrollpositions.find(
+            (p) => p.path === view.file?.path
+          )?.scrollposition;
+
+          if (!lastPosition) return
           
           view.editor.cm.dispatch({
-            effects: [restoreScrollEffect.of(1000)],
+            effects: [restoreScrollEffect.of(lastPosition)],
           });
           RememberScrollposition.restoreScrollposition(view, this.data)
         }
