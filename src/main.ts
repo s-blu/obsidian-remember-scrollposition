@@ -59,14 +59,26 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (view && view.editor.cm) {
           const lastPosition = this.data.scrollpositions.find(
             (p) => p.path === view.file?.path
-          )?.scrollposition;
+          );
 
           if (!lastPosition) return
           
+          // view.editor.cm.dispatch({
+          //   effects: [restoreScrollEffect.of(lastPosition)],
+          // });
+
+          console.log('ram', lastPosition.range)
+
           view.editor.cm.dispatch({
-            effects: [restoreScrollEffect.of(lastPosition)],
+            effects: view.editor.scrollIntoView(lastPosition.range, true)
           });
-          RememberScrollposition.restoreScrollposition(view, this.data)
+          // view.editor.cm.dispatch({
+          //   selection: { 
+          //     anchor: lastPosition
+          //   },
+          //   scrollIntoView: true,
+          // });
+          //RememberScrollposition.restoreScrollposition(view, this.data)
         }
       })
     );
@@ -114,16 +126,16 @@ export const ScrollpositionField = StateField.define<number>({
     return 0;
   },
   update(oldState: number, transaction: Transaction): number {
-    console.log('scroll pos field update called', oldState, transaction)
+    // console.log('scroll pos field update called', oldState, transaction)
 
     let newState = oldState;
 
     for (const effect of transaction.effects) {
       if (effect.is(restoreScrollEffect)) {
-        console.log("!!! got a scroll pos effect !!!")
+        // console.log("!!! got a scroll pos effect !!!")
         newState += effect.value;
       } else {
-        console.log('effect was not of type restore scroll effect')
+        // console.log('effect was not of type restore scroll effect')
       }
 
     }
