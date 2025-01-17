@@ -18,7 +18,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
   async onload() {
     await this.loadPluginData();
-    this.registerEditorExtension([ScrollpositionField]);
     
     // TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
 
@@ -62,21 +61,19 @@ export default class RememberScrollpositionPlugin extends Plugin {
           );
 
           if (!lastPosition) return
-          
-          // view.editor.cm.dispatch({
-          //   effects: [restoreScrollEffect.of(lastPosition)],
-          // });
-
-          console.log('ram', lastPosition.range)
-
           view.editor.cm.dispatch({
             effects: view.editor.scrollIntoView(lastPosition.range, true)
           });
           // view.editor.cm.dispatch({
           //   selection: { 
-          //     anchor: lastPosition
+          //     anchor: lastPosition.scrollposition
           //   },
           //   scrollIntoView: true,
+          // });
+
+          // view.editor.cm.scrollDOM.scrollTo({
+          //   top: lastPosition.scrollposition,
+          //   behavior: 'smooth'
           // });
           //RememberScrollposition.restoreScrollposition(view, this.data)
         }
@@ -118,28 +115,3 @@ export default class RememberScrollpositionPlugin extends Plugin {
     );
   }
 }
-
-const restoreScrollEffect = StateEffect.define<number>();
-
-export const ScrollpositionField = StateField.define<number>({
-  create(state: EditorState): number {
-    return 0;
-  },
-  update(oldState: number, transaction: Transaction): number {
-    // console.log('scroll pos field update called', oldState, transaction)
-
-    let newState = oldState;
-
-    for (const effect of transaction.effects) {
-      if (effect.is(restoreScrollEffect)) {
-        // console.log("!!! got a scroll pos effect !!!")
-        newState += effect.value;
-      } else {
-        // console.log('effect was not of type restore scroll effect')
-      }
-
-    }
-
-    return newState;
-  },
-});
