@@ -51,31 +51,11 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
-        console.log("active leave changed", leaf);
         const view =
           this.app.workspace.getActiveViewOfType(MarkdownView);
 
         if (view && view.editor.cm) {
-          const lastPosition = this.data.scrollpositions.find(
-            (p) => p.path === view.file?.path
-          );
-
-          if (!lastPosition) return
-          view.editor.cm.dispatch({
-            effects: view.editor.scrollIntoView(lastPosition.range, true)
-          });
-          // view.editor.cm.dispatch({
-          //   selection: { 
-          //     anchor: lastPosition.scrollposition
-          //   },
-          //   scrollIntoView: true,
-          // });
-
-          // view.editor.cm.scrollDOM.scrollTo({
-          //   top: lastPosition.scrollposition,
-          //   behavior: 'smooth'
-          // });
-          //RememberScrollposition.restoreScrollposition(view, this.data)
+          RememberScrollposition.restoreScrollposition(view, this.data)
         }
       })
     );
@@ -98,11 +78,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO be able to exclude or include certain paths for saving only
 
     // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
-
-    // When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-    this.registerInterval(
-      window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
-    );
   }
 
   onunload() {}

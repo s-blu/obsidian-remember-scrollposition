@@ -22,6 +22,18 @@ export class RememberScrollposition {
 
     const scrollSnapshot = view.editor.cm.scrollSnapshot().value;
     const currentLine = cmState.doc.lineAt(scrollSnapshot.range.head);
+    console.log("current line", currentLine);
+    console.log("range", scrollSnapshot.range);
+    console.log(
+      "lineBlockAt to",
+      view.editor.cm.lineBlockAt(scrollSnapshot.range.to),
+    );
+    console.log(
+      "lineBlockAt from",
+      view.editor.cm.lineBlockAt(scrollSnapshot.range.from),
+    );
+
+    console.log(view.editor.cm.scrollDOM.scrollTo);
 
     // TODO check if the scroll position gets more precise when using https://discuss.codemirror.net/t/smooth-scroll-to-selection-position/4875
     //console.log('coordsatpos', view.editor.cm.coordsAtPos(scrollSnapshot.head))
@@ -82,18 +94,17 @@ export class RememberScrollposition {
       (p) => p.path === view.file?.path,
     );
 
-    console.log(view.editor.cm);
-
     // TODO check how old the scroll position is and ignore it if configured in settings
 
     if (lastPosition && currentScrollPosition === 0) {
+      const lineBlockAt = view.editor.cm.lineBlockAt(lastPosition.selectionRange.range.to);
+
       console.log("dispatching ev", lastPosition.range);
       view.editor.cm.dispatch({
         // effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
-        effects: view.editor.cm.docView.scrollIntoView(lastPosition.selectionRange, {
-          y: "center",
-        }),
+        effects: view.editor.cm.scrollDOM.scrollTo({ top: lineBlockAt.from, behavior: 'smooth' }),
       });
+      view.editor.cm.scrollDOM.scrollTo
 
       // TODO this would enable a smooth scrolling, but requires some calculation, see https://discuss.codemirror.net/t/smooth-scroll-to-selection-position/4875
       // view.editor.cm.scrollDOM.scrollTo({
