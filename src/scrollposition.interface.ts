@@ -9,7 +9,8 @@ export interface RememberScrollpositionPluginItem {
   path: string;
   scrollposition: number;
   updated: number;
-  range: EditorRange
+  editorRange: EditorRange
+  selectionRange: SelectionRange
 }
 
 export interface RememberScrollpositionPluginData {
