@@ -1,7 +1,6 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { RememberScrollposition } from "./scrollposition";
 import { RememberScrollpositionPluginSettings, RememberScrollpositionPluginData } from "./scrollposition.interface";
-import { EditorState, StateEffect, StateField, Transaction } from "@codemirror/state";
 
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
   mySetting: "default", // TODO
@@ -12,19 +11,12 @@ const DEFAULT_DATA: RememberScrollpositionPluginData = {
   scrollpositions: []
 }
 
-
 export default class RememberScrollpositionPlugin extends Plugin {
   data: RememberScrollpositionPluginData;
 
   async onload() {
     await this.loadPluginData();
-    
-    // TODO on scroll, save the file path + scroll position with a small delay via this.saveData()
-
-    // TODO fetch the info with either getScroll() or `document.querySelector(".cm-editor.cm-focused .cm-scroller").scrollTop`
-    // TODO on exit/close, save the scroll position
-
-    // TODO register event on document.querySelector(".cm-editor.cm-focused .cm-scroller")
+    // TODO on exit/close, save the scroll position - is that necessary?
 
     let scrollingDebounce: NodeJS.Timeout;
     this.registerDomEvent(document, "wheel", (event: any) => {
@@ -43,7 +35,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
             console.log(`${sc.path}: ${sc.scrollposition}`)
           }
         })
-      }, 350); // TODO figure out a good timeout time
+      }, 350);
     });
 
     // FIXME scrolling via the scrollbar is not detected

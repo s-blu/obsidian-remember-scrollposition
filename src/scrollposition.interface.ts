@@ -1,4 +1,3 @@
-import { SelectionRange } from "@codemirror/state";
 import { EditorRange } from "obsidian";
 
 export interface RememberScrollpositionPluginSettings {
@@ -7,10 +6,8 @@ export interface RememberScrollpositionPluginSettings {
 
 export interface RememberScrollpositionPluginItem {
   path: string;
-  scrollposition: number;
   updated: number;
   editorRange: EditorRange
-  selectionRange: SelectionRange
 }
 
 export interface RememberScrollpositionPluginData {
