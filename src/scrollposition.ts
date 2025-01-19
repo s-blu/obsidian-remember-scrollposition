@@ -12,7 +12,10 @@ export class RememberScrollposition {
     console.log("attempting to save scroll position")
     if (!view?.file) return;
     // TODO check if you can get the line info from within official obsidian API 
-    if (!view.editor?.cm) {
+    // @ts-ignore cm is not part of the official API and I feel bad 
+    const cm = view.editor?.cm; 
+
+    if (!cm) {
       console.error('No access to codemirror instance available, thus cannot retrieve necessary information to save scroll position. Exiting.')
       return;
     }
@@ -21,7 +24,7 @@ export class RememberScrollposition {
     const existingPos = data.scrollpositions.find((p) => p.path === filepath);
     const now = Date.now();
 
-    const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(view.editor.cm)
+    const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(cm)
 
     if (existingPos) {
       existingPos.editorRange = editorRange;
@@ -41,6 +44,7 @@ export class RememberScrollposition {
   static retrieveEditorRangeForCurrentPosition(codemirror: any) {
     // TODO some checks might be a good idea before traversing a dozens of child properties
     const scrollSnapshot = codemirror.scrollSnapshot().value;
+    // TODO can I add the view heigh to range.head to use the line from the bottom?
     const currentLine = codemirror.viewState.state.doc.lineAt(scrollSnapshot.range.head);
 
     return {
@@ -82,6 +86,7 @@ export class RememberScrollposition {
     if (lastPosition && currentScrollPosition === 0) {
       console.log("dispatching scrollIntoView", lastPosition);
 
+      // @ts-ignore cm is not part of the official API and I feel bad 
       view.editor.cm.dispatch({
         effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
       });
