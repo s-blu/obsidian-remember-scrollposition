@@ -1,4 +1,4 @@
-import { EditorRange, MarkdownView } from "obsidian";
+import { MarkdownView } from "obsidian";
 import { RememberScrollpositionPluginData } from "./scrollposition.interface";
 
 export class RememberScrollposition {
@@ -9,28 +9,19 @@ export class RememberScrollposition {
     data: RememberScrollpositionPluginData,
     callback: (data: RememberScrollpositionPluginData) => void,
   ) {
+    console.log("attempting to save scroll position")
     if (!view?.file) return;
-    console.log("saving scroll position");
+    // TODO check if you can get the line info from within official obsidian API 
+    if (!view.editor?.cm) {
+      console.error('No access to codemirror instance available, thus cannot retrieve necessary information to save scroll position. Exiting.')
+      return;
+    }
 
     const filepath = view.file.path;
-    const now = Date.now();
     const existingPos = data.scrollpositions.find((p) => p.path === filepath);
+    const now = Date.now();
 
-    // TODO extract creating a fitting editor range
-    const cmState = view.editor.cm.viewState.state;
-    const scrollSnapshot = view.editor.cm.scrollSnapshot().value;
-    const currentLine = cmState.doc.lineAt(scrollSnapshot.range.head);
-
-    const editorRange: EditorRange = {
-      to: {
-        line: currentLine.number,
-        ch: 1,
-      },
-      from: {
-        line: 0,
-        ch: 1,
-      },
-    };
+    const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(view.editor.cm)
 
     if (existingPos) {
       existingPos.editorRange = editorRange;
@@ -46,11 +37,23 @@ export class RememberScrollposition {
     callback(data);
   }
 
-  //TODO extract that logic for reusability and separation of concerns
-  static getLastScrollposition(
-    view: MarkdownView,
-    data: RememberScrollpositionPluginData,
-  ) {}
+  // TODO figure out if you can type that private variable correctly
+  static retrieveEditorRangeForCurrentPosition(codemirror: any) {
+    // TODO some checks might be a good idea before traversing a dozens of child properties
+    const scrollSnapshot = codemirror.scrollSnapshot().value;
+    const currentLine = codemirror.viewState.state.doc.lineAt(scrollSnapshot.range.head);
+
+    return {
+      to: {
+        line: currentLine.number,
+        ch: 1,
+      },
+      from: {
+        line: 0,
+        ch: 1,
+      },
+    };
+  }
 
   static restoreScrollposition(
     view: MarkdownView,
@@ -62,11 +65,11 @@ export class RememberScrollposition {
       );
       return;
     }
-    console.log(
-      "restoring scroll position, current: ",
-      view.editor.getScrollInfo()?.top,
-    );
     const currentScrollPosition = view.editor.getScrollInfo()?.top;
+    console.log(
+      `attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`
+    );
+    
 
     // only try to set the scroll position if its on top. If its not, it was already updated before
     if (currentScrollPosition !== 0) return;

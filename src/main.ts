@@ -2,8 +2,9 @@ import { MarkdownView, Plugin } from "obsidian";
 import { RememberScrollposition } from "./scrollposition";
 import { RememberScrollpositionPluginSettings, RememberScrollpositionPluginData } from "./scrollposition.interface";
 
+ // TODO adjust / remove when unneeded
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
-  mySetting: "default", // TODO
+  mySetting: "default",
 };
 
 const DEFAULT_DATA: RememberScrollpositionPluginData = {
@@ -30,9 +31,11 @@ export default class RememberScrollpositionPlugin extends Plugin {
         RememberScrollposition.saveScrollPosition(view, this.data, async (modifiedData) => {
           this.data = modifiedData;
           await this.saveData(this.data);
+
+          // TODO remove logging
           console.log('saved modified data', this.data)
           for (const sc of this.data.scrollpositions) {
-            console.log(`${sc.path}: ${sc.scrollposition}`)
+            console.log(`${sc.path}: ${sc.editorRange?.to?.line}`)
           }
         })
       }, 350);
@@ -68,6 +71,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO when scrolling instantly, allow disabling the ribbon icon
     // TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
     // TODO be able to exclude or include certain paths for saving only
+    // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results  
 
     // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
   }
