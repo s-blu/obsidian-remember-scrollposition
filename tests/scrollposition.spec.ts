@@ -8,6 +8,10 @@ import {
 } from "./mock.utils";
 
 describe("RememberScrollposition", () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  })
+
   describe("saveScrollposition", () => {
     it("should save current scrollposition for new file records", () => {
       const mockView = getMockView("mock/path/file.md");
@@ -105,6 +109,7 @@ describe("RememberScrollposition", () => {
   });
 
   describe("retrieveEditorRangeForCurrentPosition", () => {
+
     it("should extract current line number from scrollSnapshot", () => {
       const mockCm = {
         scrollSnapshot: jest

@@ -49,6 +49,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const view =
           this.app.workspace.getActiveViewOfType(MarkdownView);
 
+        // @ts-ignore cm is not part of the official API and I feel bad
         if (view && view.editor.cm) {
           RememberScrollposition.restoreScrollposition(view, this.data)
         }

@@ -26,6 +26,11 @@ export class RememberScrollposition {
 
     const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(cm)
 
+    if (!editorRange) {
+      console.error(`Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`)
+      return;
+    }
+
     if (existingPos) {
       existingPos.editorRange = editorRange;
       existingPos.updated = now;
@@ -42,10 +47,12 @@ export class RememberScrollposition {
 
   // TODO figure out if you can type that private variable correctly
   static retrieveEditorRangeForCurrentPosition(codemirror: any) {
-    // TODO some checks might be a good idea before traversing a dozens of child properties
-    const scrollSnapshot = codemirror.scrollSnapshot().value;
+    if (!codemirror) return null;
+    const scrollSnapshot = codemirror.scrollSnapshot()?.value;
+    if (!scrollSnapshot) return null;
     // TODO can I add the view heigh to range.head to use the line from the bottom?
-    const currentLine = codemirror.viewState.state.doc.lineAt(scrollSnapshot.range.head);
+    const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
+    if (!currentLine) return null;
 
     return {
       to: {
