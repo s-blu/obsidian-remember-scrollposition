@@ -21,11 +21,15 @@ export function mockRetrieveEditorRange(line?: number) {
     .mockReturnValue(getMockEditorRange(line));
 }
 
-export function getMockView(filepath = "mock/path.md") {
+export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
   return {
     file: { path: filepath},
     editor: {
-      cm: {}
+      cm: {
+        dispatch: jest.fn()
+      },
+      getScrollInfo: jest.fn().mockReturnValue({ top: scrollTop }),
+      scrollIntoView: jest.fn()
     }
   } as unknown as MarkdownView;
 }

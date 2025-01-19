@@ -149,24 +149,72 @@ describe("RememberScrollposition", () => {
       ).toEqual(null);
 
       // @ts-expect-error should not error out on missing cm functionality
-      mockCm.scrollSnapshot = jest.fn().mockReturnValue({})
+      mockCm.scrollSnapshot = jest.fn().mockReturnValue({});
       // @ts-expect-error should not error out on missing cm functionality
-      mockCm.viewState = { state: {}};
-      expect(RememberScrollposition.retrieveEditorRangeForCurrentPosition(mockCm)).toEqual(null)
+      mockCm.viewState = { state: {} };
+      expect(
+        RememberScrollposition.retrieveEditorRangeForCurrentPosition(mockCm),
+      ).toEqual(null);
     });
   });
 
   describe("restoreScrollposition", () => {
-    it.todo(
-      "should load last scroll position and dispatch scrollIntoView effect to codemirror",
-    );
+    it("should load last scroll position and dispatch scrollIntoView effect to codemirror", () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+      const mockEditorRange = getMockEditorRange(15);
 
-    it.todo("should do nothing if called with invalid parameters");
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: Date.now(),
+      });
 
-    it.todo(
-      "should do nothing if current scroll is not on top (meaning file was already scrolled)",
-    );
+      RememberScrollposition.restoreScrollposition(mockView, mockData);
 
-    it.todo("should do nothing if no scrollposition is found for current file");
+      // @ts-expect-error usage of inofficial API
+      expect(mockView.editor.cm.dispatch).toHaveBeenCalled();
+      expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
+        mockEditorRange,
+        true,
+      );
+    });
+
+    it("should do nothing if called with invalid parameters", () => {
+      const mockView = getMockView(undefined, 0);
+      RememberScrollposition.restoreScrollposition(null as any, null as any);
+      RememberScrollposition.restoreScrollposition(mockView, null as any);
+
+      expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it("should do nothing if current scroll is not on top (meaning file was already scrolled)", () => {
+      const mockView = getMockView(undefined, 300);
+      const mockData = getMockPluginData();
+      const mockEditorRange = getMockEditorRange(15);
+
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: Date.now(),
+      });
+
+      RememberScrollposition.restoreScrollposition(mockView, mockData);
+
+      // @ts-expect-error usage of inofficial API
+      expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
+      expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it("should do nothing if no scrollposition is found for current file", () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+
+      RememberScrollposition.restoreScrollposition(mockView, mockData);
+
+      // @ts-expect-error usage of inofficial API
+      expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
+      expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
+    });
   });
 });

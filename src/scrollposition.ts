@@ -69,7 +69,7 @@ export class RememberScrollposition {
       );
       return;
     }
-    const currentScrollPosition = view.editor.getScrollInfo()?.top;
+    const currentScrollPosition = view.editor?.getScrollInfo()?.top;
     console.log(
       `attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`
     );
