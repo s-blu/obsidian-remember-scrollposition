@@ -1,50 +1,110 @@
+import { Editor } from "obsidian";
 import { RememberScrollposition } from "../src/scrollposition";
-import { getMockPluginData, getMockView, mockRetrieveEditorRange } from "./mock.utils";
+import { getMockEditorRange, getMockPluginData, getMockView, mockRetrieveEditorRange } from "./mock.utils";
 
 describe("RememberScrollposition", () => {
   describe("saveScrollPosition", () => {
     it('should save current scrollposition for new file records', () => {
       const mockView = getMockView("mock/path/file.md");
       const mockData = getMockPluginData();
-      mockRetrieveEditorRange(11);
-
       const cbSpy = jest.fn();
+      mockRetrieveEditorRange(11);
 
       RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy)
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
         scrollpositions: [
           {
-            editorRange: {
-              to: {
-                line: 11,
-                ch: 1,
-              },
-              from: {
-                line: 0,
-                ch: 1,
-              }, 
-            },
+            editorRange: getMockEditorRange(11),
             path: "mock/path/file.md",
             updated: expect.any(Number)
           }
         ]
       })
     });
-    it.todo('should update current scrollposition for existing file records')
+    it('should update current scrollposition for existing file records', () => {
+      const mockPath = "existing/file.md"
+      const mockView = getMockView(mockPath)
+      const mockData = getMockPluginData();
+      mockData.scrollpositions.push({
+        path: mockPath,
+        editorRange: getMockEditorRange(),
+        updated: Date.now()
+      })
+      const cbSpy = jest.fn();
+      mockRetrieveEditorRange(20);
 
-    it.todo('should save current date to record')
+      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
 
-    it.todo('should pass updated data to callback for further processing')
+      expect(cbSpy).toHaveBeenCalledWith({
+        settings: expect.anything(),
+        scrollpositions: [
+          {
+            editorRange: getMockEditorRange(20),
+            path: mockPath,
+            updated: expect.any(Number)
+          }
+        ]
+      })
+    })
+
+    it('should update timestamp on record', () => {
+      const mockPath = "existing/file.md"
+      const mockView = getMockView(mockPath)
+      const mockData = getMockPluginData();
+
+      mockData.scrollpositions.push({
+        path: mockPath,
+        editorRange: getMockEditorRange(),
+        updated: new Date("2024-10-02T09:00").valueOf()
+      })
+      const cbSpy = jest.fn();
+      mockRetrieveEditorRange(20);
+
+      const newTime = new Date("2024-10-02T11:00").valueOf();
+      jest.spyOn(Date, 'now').mockReturnValue(newTime)
+
+      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
+
+      expect(cbSpy).toHaveBeenCalledWith({
+        settings: expect.anything(),
+        scrollpositions: [
+          {
+            editorRange: getMockEditorRange(20),
+            path: mockPath,
+            updated: newTime
+          }
+        ]
+      })
+    })
+
     it("should do nothing if app is invalid", () => {
+      const mockData = getMockPluginData();
+      const cbSpy = jest.fn();
+
       RememberScrollposition.saveScrollPosition(
         null as any,
-        null as any,
-        null as any,
+        mockData,
+        cbSpy
       );
+
+      expect(cbSpy).not.toHaveBeenCalled()
     });
 
-    it.todo('should do nothing if codemirror is inaccesible')
+    it('should do nothing if codemirror is inaccesible', () => {
+      const mockView = getMockView()
+      mockView.editor = {} as unknown as Editor;
+      const mockData = getMockPluginData();
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.saveScrollPosition(
+        mockView,
+        mockData,
+        cbSpy
+      );
+
+      expect(cbSpy).not.toHaveBeenCalled()
+    })
   });
 
   describe('retrieveEditorRangeForCurrentPosition', () => {
