@@ -1,3 +1,4 @@
+import { App } from "obsidian";
 
 
 export class Plugin {
@@ -7,5 +8,16 @@ export class Plugin {
   registerDomEvent() {}
   registerInterval() {}
 
-  loadData() {}
+  loadData() {
+    return {}
+  }
+
+  app = {
+      workspace: {
+        on: jest.fn()
+      },
+      vault: {
+        on: jest.fn()
+      }
+    } as unknown as App;
 }
