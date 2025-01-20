@@ -46,7 +46,14 @@ export function getMockPluginData() {
 export function getMockApp() {
   return {
     workspace: {
-      on: jest.fn()
+      on: jest.fn(),
+      getActiveViewOfType: () => {
+        return {
+          editor: {
+            cm: {}
+          }
+        }
+      }
     },
     vault: {
       on: jest.fn()
