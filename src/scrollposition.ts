@@ -50,17 +50,21 @@ export class RememberScrollposition {
     if (!codemirror) return null;
     const scrollSnapshot = codemirror.scrollSnapshot()?.value;
     if (!scrollSnapshot) return null;
-    // TODO can I add the view heigh to range.head to use the line from the bottom?
     const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
     if (!currentLine) return null;
 
+    /** TODO You might be able to use the codemirror.viewport information to adjust the target
+     * line somewhat and allow configuring if we should scroll to top/center or bottom
+     * console.log(scrollSnapshot.range.head, codemirror.viewport)
+     */
+    
     return {
       to: {
         line: currentLine.number,
         ch: 1,
       },
       from: {
-        line: 0,
+        line: currentLine.number,
         ch: 1,
       },
     };

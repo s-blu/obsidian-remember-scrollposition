@@ -129,6 +129,7 @@ describe("RememberScrollposition", () => {
       const result =
         RememberScrollposition.retrieveEditorRangeForCurrentPosition(mockCm);
       expect(result?.to?.line).toEqual(123);
+      expect(result?.from?.line).toEqual(123);
     });
 
     it("should return null if called with invalid parameters", () => {
