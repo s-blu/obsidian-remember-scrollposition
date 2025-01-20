@@ -11,7 +11,7 @@ export class ReScroll {
     data: ReScrollPluginData,
     callback: (data: ReScrollPluginData) => void,
   ) {
-    logDebug("attempting to save scroll position")
+    logDebug("attempting to save scroll position", view?.file?.path)
     if (!view?.file) return;
     // TODO check if you can get the line info from within official obsidian API 
     // @ts-ignore cm is not part of the official API and I feel bad 
@@ -33,6 +33,7 @@ export class ReScroll {
       return;
     }
 
+    logDebug(`${existingPos ? 'updating' : 'saving new'} position ${editorRange?.to?.line} for ${filepath}`)
     if (existingPos) {
       existingPos.editorRange = editorRange;
       existingPos.updated = now;
