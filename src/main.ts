@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
@@ -17,13 +17,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
   private data: ReScrollPluginData;
   // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
   private scrollingDebounce: NodeJS.Timeout;
-  private scrollListenerAborts = {};
-
+  private observedLeaves: string[] = [];
 
   async onload() {
     await this.loadPluginData();
 
     // initially restore scroll position on all open editors
+    // listen to scroll events on open editors
     this.app.workspace.onLayoutReady(() => {
       const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
       activeLeaves.forEach((leaf) => {
@@ -32,42 +32,24 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (!(view instanceof MarkdownView)) return;
         ReScroll.restoreScrollposition(view, this.data);
 
-        this.registerScrollListener(view, leaf["id"] as string)
+        this.registerScrollListener(leaf)
       });
     });
 
     this.registerEvent(
-      this.app.workspace.on("layout-change", (...args) => {
-        console.log("=== // layout change", this.scrollListenerAborts);
-        // TODO register missing leaves here
+      this.app.workspace.on("layout-change", () => {
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
-        
         activeLeaves.forEach(leaf => {
-          if (leaf.view instanceof MarkdownView && !this.scrollListenerAborts[leaf.id]) {
-            this.registerScrollListener(leaf.view, leaf["id"] as string)
+          // @ts-ignore usage of internal property
+          const id = leaf.id;
+          // TODO is it necessary to manually remove listeners from closed leaves?
+          if (this.observedLeaves.indexOf(id) === -1) {
+            this.registerScrollListener(leaf)
+            this.observedLeaves.push(id)
           }
         })
       }),
     );
-
-    // FIXME scrolling via the scrollbar is not detected!
-    // let scrollingDebounce: NodeJS.Timeout;
-    // this.registerDomEvent(document, "wheel", (event: any) => {
-    //   // Reset if we get another wheel event in the timeout duration to only save when stop scrolling
-    //   window.clearTimeout(scrollingDebounce);
-
-    //   scrollingDebounce = setTimeout(() => {
-    //     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    //     if (!view) return;
-
-    //     ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
-    //       this.updateData(modifiedData);
-
-    //       logDebug("saved modified data", this.data);
-    //     });
-    //   }, 350);
-    // });
-
 
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
@@ -76,10 +58,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (!view) return;
         // @ts-ignore cm is not part of the official API and I feel bad
         const cm = view?.editor?.cm;
-
-        // const filename = view.file?.path;
-        // const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
-        // if (scrollEl) this.registerScrollListener(scrollEl)
 
         if (cm) {
           ReScroll.restoreScrollposition(view, this.data);
@@ -116,19 +94,16 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.saveData(this.data);
   }
 
-  registerScrollListener(view: MarkdownView, id: string) {
+  registerScrollListener(leaf: WorkspaceLeaf) {
+    if (!leaf?.view || !(leaf.view instanceof MarkdownView)) return;
+    const view = leaf.view as MarkdownView;
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
-    const abort = new AbortController();
-    if (id) {
-      // @ts-ignore
-      this.scrollListenerAborts[id] = abort;
-    }
+    // @ts-ignore usage of internal property
+    const id = leaf?.id;
 
-    this.registerDomEvent(scrollEl, "scroll", (...args) => {
-      console.log('scrolling', id)
+    this.registerDomEvent(scrollEl, "scroll", () => {
+      logDebug('scrolling', id)
       this.savePositionOnEndOfScrolling(view, id);
-    }, {
-      signal: abort.signal
     });
   }
 
@@ -137,8 +112,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     window.clearTimeout(this.scrollingDebounce);
 
     this.scrollingDebounce = setTimeout(() => {
-      console.log('timeout triggered', view.file?.path, id)
-      //const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      logDebug('scroll debounce triggered', view.file?.path, id)
       if (!view) return;
 
       ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
