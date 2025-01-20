@@ -278,10 +278,87 @@ describe("RememberScrollposition", () => {
 
       RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", undefined, cbSpy);
 
-      expect(cbSpy).toHaveBeenCalledWith(expect(cbSpy).toHaveBeenCalledWith({
+      expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
         scrollpositions: []
-      }));
+      });
+    })
+  })
+
+  describe('deleteEntry', () => {
+    let mockData: RememberScrollpositionPluginData;
+    let mockEditorRange: EditorRange;
+    let updated: number;
+
+    beforeEach(() => {
+      mockData = getMockPluginData();
+      mockEditorRange = getMockEditorRange(2);
+      updated = Date.now();
+    })
+    it('should delete entry, if entry is available', () => {
+      const mockEntryToDelete = {
+        editorRange: mockEditorRange,
+        path: "nameToDelete.md",
+        updated: updated,
+      };
+      const mockEntry2 = {
+        editorRange: mockEditorRange,
+        path: "some/other/file.md",
+        updated: updated,
+      };
+      const mockEntry3 = {
+        editorRange: mockEditorRange,
+        path: "doNotDeleteMePlease.md",
+        updated: updated,
+      };
+      mockData.scrollpositions.push(mockEntry2, mockEntryToDelete, mockEntry3);
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.deleteEntry(mockData, "nameToDelete.md", cbSpy);
+
+      expect(cbSpy).toHaveBeenCalledWith({
+        settings: expect.anything(),
+        scrollpositions: [mockEntry2, mockEntry3]
+      });
+    })
+    it('should do nothing if no entry is available', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "someName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.deleteEntry(mockData, "delete/this.md", cbSpy);
+
+      expect(cbSpy).not.toHaveBeenCalled()
+    })
+
+    it('should do nothing if filepath is inavlid', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "someName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      // @ts-expect-error should not crash with invalid data
+      RememberScrollposition.deleteEntry(mockData, undefined, cbSpy);
+
+      expect(cbSpy).not.toHaveBeenCalled()
+    })
+
+    it('should do nothing, if data is invalid', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "oldName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.deleteEntry({} as any, "delete/this.md", cbSpy);
+
+      expect(cbSpy).not.toHaveBeenCalled();
     })
   })
 

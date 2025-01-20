@@ -108,12 +108,21 @@ export class RememberScrollposition {
 
     if (newName) {
       entry.path = newName;
+      callback(data)
     } else {
       console.warn(`RememberScrollposition: ${oldName} was renamed, but was not able to fetch new file name. Entry would get inaccessible; deleting.`)
-      // TODO delete inaccessible entry
+      RememberScrollposition.deleteEntry(data, oldName, callback);
     }
+  }
 
-    callback(data)
+  static deleteEntry(data: RememberScrollpositionPluginData, filepath: string, callback: (data: RememberScrollpositionPluginData) => void) {
+    if (!data?.scrollpositions) return;
+    
+    const index = data.scrollpositions.findIndex((p) => p.path === filepath)
+    if (index === -1) return;
+
+    data.scrollpositions.splice(index, 1);
+    callback(data);
   }
 
   private static getScrollpositionEntry(data: RememberScrollpositionPluginData, filepath?: string) {

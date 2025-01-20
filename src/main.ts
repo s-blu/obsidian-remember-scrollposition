@@ -29,8 +29,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (!view) return;
 
         RememberScrollposition.saveScrollPosition(view, this.data, async (modifiedData) => {
-          this.data = modifiedData;
-          await this.saveData(this.data);
+          this.updateData(modifiedData);
 
           // TODO remove logging
           console.log('saved modified data', this.data)
@@ -59,17 +58,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.registerEvent(
       this.app.vault.on("rename", (file, oldName) => {
         const newName = file?.path;
-        RememberScrollposition.updatePathOfEntry(this.data, oldName, newName, async (modifiedData: RememberScrollpositionPluginData) => {
-          this.data = modifiedData;
-          await this.saveData(this.data);
-        })
+        RememberScrollposition.updatePathOfEntry(this.data, oldName, newName, this.updateData)
       })
     );
 
     this.registerEvent(
-      this.app.vault.on("delete", (...args) => {
-        console.log('delete is triggered', args)
-        // TODO remove path if available in scrollposition data
+      this.app.vault.on("delete", (deletedFile) => {
+        RememberScrollposition.deleteEntry(this.data, deletedFile?.path, this.updateData)
       })
     );
 
@@ -80,6 +75,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results  
 
     // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
+  }
+
+  async updateData(modifiedData: RememberScrollpositionPluginData) {
+    if (!modifiedData) return;
+
+    this.data = modifiedData;
+    await this.saveData(this.data);
   }
 
   onunload() {}
