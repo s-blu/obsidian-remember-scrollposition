@@ -1,13 +1,10 @@
 import { MarkdownView, Plugin } from "obsidian";
 import { ReScroll } from "./scrollposition";
-import {
-  ReScrollPluginSettings,
-  ReScrollPluginData,
-} from "./scrollposition.interface";
+import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
-  scrollInstantly: true
+  scrollInstantly: true,
 };
 
 const DEFAULT_DATA: ReScrollPluginData = {
@@ -21,6 +18,17 @@ export default class RememberScrollpositionPlugin extends Plugin {
   async onload() {
     await this.loadPluginData();
 
+    // initially restore scroll position on all open editors
+    this.app.workspace.onLayoutReady(() => {
+      const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
+      activeLeaves.forEach((leaf) => {
+        const view = leaf.view;
+        // TODO is this even necessary?
+        if (!(view instanceof MarkdownView)) return;
+        ReScroll.restoreScrollposition(view, this.data);
+      });
+    });
+
     // FIXME scrolling via the scrollbar is not detected!
     let scrollingDebounce: NodeJS.Timeout;
     this.registerDomEvent(document, "wheel", (event: any) => {
@@ -31,15 +39,11 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) return;
 
-        ReScroll.saveScrollPosition(
-          view,
-          this.data,
-          async (modifiedData) => {
-            this.updateData(modifiedData);
+        ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
+          this.updateData(modifiedData);
 
-            logDebug("saved modified data", this.data);
-          },
-        );
+          logDebug("saved modified data", this.data);
+        });
       }, 350);
     });
 
@@ -48,7 +52,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
       this.app.workspace.on("active-leaf-change", (leaf) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         // @ts-ignore cm is not part of the official API and I feel bad
-        const cm = view?.editor?.cm
+        const cm = view?.editor?.cm;
 
         if (cm) {
           ReScroll.restoreScrollposition(view, this.data);
@@ -59,22 +63,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.registerEvent(
       this.app.vault.on("rename", (file, oldName) => {
         const newName = file?.path;
-        ReScroll.updatePathOfEntry(
-          this.data,
-          oldName,
-          newName,
-          this.updateData,
-        );
+        ReScroll.updatePathOfEntry(this.data, oldName, newName, this.updateData);
       }),
     );
 
     this.registerEvent(
       this.app.vault.on("delete", (deletedFile) => {
-        ReScroll.deleteEntry(
-          this.data,
-          deletedFile?.path,
-          this.updateData,
-        );
+        ReScroll.deleteEntry(this.data, deletedFile?.path, this.updateData);
       }),
     );
 
