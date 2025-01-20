@@ -1,5 +1,4 @@
-import { App } from "obsidian";
-
+import { getMockApp } from "../tests/mock.utils";
 
 export class Plugin {
   onload() {}
@@ -9,15 +8,8 @@ export class Plugin {
   registerInterval() {}
 
   loadData() {
-    return {}
+    return {};
   }
 
-  app = {
-      workspace: {
-        on: jest.fn()
-      },
-      vault: {
-        on: jest.fn()
-      }
-    } as unknown as App;
+  app = getMockApp();
 }

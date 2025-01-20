@@ -1,4 +1,4 @@
-import { MarkdownView } from "obsidian";
+import { App, MarkdownView } from "obsidian";
 import { RememberScrollposition } from "../src/scrollposition";
 import { RememberScrollpositionPluginData } from "../src/scrollposition.interface";
 
@@ -41,4 +41,15 @@ export function getMockPluginData() {
     },
     scrollpositions: []
   } as RememberScrollpositionPluginData;
+}
+
+export function getMockApp() {
+  return {
+    workspace: {
+      on: jest.fn()
+    },
+    vault: {
+      on: jest.fn()
+    }
+  } as unknown as App;
 }
