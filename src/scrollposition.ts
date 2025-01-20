@@ -1,5 +1,6 @@
 import { MarkdownView } from "obsidian";
 import { RememberScrollpositionPluginData } from "./scrollposition.interface";
+import { logDebug } from "./debugLog";
 
 export class RememberScrollposition {
   scrollingDebounce: NodeJS.Timeout;
@@ -9,14 +10,14 @@ export class RememberScrollposition {
     data: RememberScrollpositionPluginData,
     callback: (data: RememberScrollpositionPluginData) => void,
   ) {
-    console.log("attempting to save scroll position")
+    logDebug("attempting to save scroll position")
     if (!view?.file) return;
     // TODO check if you can get the line info from within official obsidian API 
     // @ts-ignore cm is not part of the official API and I feel bad 
     const cm = view.editor?.cm; 
 
     if (!cm) {
-      console.error('No access to codemirror instance available, thus cannot retrieve necessary information to save scroll position. Exiting.')
+      console.error('RememberScrollposition: No access to codemirror instance available, thus cannot retrieve necessary information to save scroll position. Exiting.')
       return;
     }
 
@@ -27,7 +28,7 @@ export class RememberScrollposition {
     const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(cm)
 
     if (!editorRange) {
-      console.error(`Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`)
+      console.error(`RememberScrollposition: Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`)
       return;
     }
 
@@ -55,7 +56,7 @@ export class RememberScrollposition {
 
     /** TODO You might be able to use the codemirror.viewport information to adjust the target
      * line somewhat and allow configuring if we should scroll to top/center or bottom
-     * console.log(scrollSnapshot.range.head, codemirror.viewport)
+     * logDebug(scrollSnapshot.range.head, codemirror.viewport)
      */
     
     return {
@@ -75,13 +76,13 @@ export class RememberScrollposition {
     data: RememberScrollpositionPluginData,
   ) {
     if (!view || !data) {
-      console.error(
-        "restoreScrollposition was called with invalid parameters.",
+      console.warn(
+        "RememberScrollposition: restoreScrollposition was called with invalid parameters.",
       );
       return;
     }
     const currentScrollPosition = view.editor?.getScrollInfo()?.top;
-    console.log(
+    logDebug(
       `attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`
     );
     
@@ -92,7 +93,7 @@ export class RememberScrollposition {
 
     // TODO check how old the scroll position is and ignore it if configured in settings
     if (lastPosition && currentScrollPosition === 0) {
-      console.log("dispatching scrollIntoView", lastPosition);
+      logDebug("dispatching scrollIntoView", lastPosition);
 
       // @ts-ignore cm is not part of the official API and I feel bad 
       view.editor.cm.dispatch({
@@ -117,7 +118,7 @@ export class RememberScrollposition {
 
   static deleteEntry(data: RememberScrollpositionPluginData, filepath: string, callback: (data: RememberScrollpositionPluginData) => void) {
     if (!data?.scrollpositions) return;
-    
+
     const index = data.scrollpositions.findIndex((p) => p.path === filepath)
     if (index === -1) return;
 

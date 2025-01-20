@@ -34,11 +34,14 @@ const context = await esbuild.context({
     ...builtins],
   format: "cjs",
   target: "es2018",
-  logLevel: "info",
+  logLevel: prod ? "info" : "debug",
   sourcemap: prod ? false : "inline",
   treeShaking: true,
   outfile: "main.js",
   minify: prod,
+  define: {
+    'process.env.RESCROLLDEBUG': prod ? 'false' : 'true'
+  }
 });
 
 if (prod) {
