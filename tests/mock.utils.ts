@@ -1,6 +1,6 @@
 import { App, MarkdownView } from "obsidian";
-import { RememberScrollposition } from "../src/scrollposition";
-import { RememberScrollpositionPluginData } from "../src/scrollposition.interface";
+import { ReScroll } from "../src/scrollposition";
+import { ReScrollPluginData } from "../src/scrollposition.interface";
 
 export function getMockEditorRange(line = 2) {
   return {
@@ -17,7 +17,7 @@ export function getMockEditorRange(line = 2) {
 
 export function mockRetrieveEditorRange(line?: number) {
   return jest
-    .spyOn(RememberScrollposition, "retrieveEditorRangeForCurrentPosition")
+    .spyOn(ReScroll, "retrieveEditorRangeForCurrentPosition")
     .mockReturnValue(getMockEditorRange(line));
 }
 
@@ -40,7 +40,7 @@ export function getMockPluginData() {
       mySetting: 'mock'
     },
     scrollpositions: []
-  } as RememberScrollpositionPluginData;
+  } as ReScrollPluginData;
 }
 
 export function getMockApp() {

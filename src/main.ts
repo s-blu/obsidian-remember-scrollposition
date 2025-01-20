@@ -1,22 +1,22 @@
 import { MarkdownView, Plugin } from "obsidian";
-import { RememberScrollposition } from "./scrollposition";
+import { ReScroll } from "./scrollposition";
 import {
-  RememberScrollpositionPluginSettings,
-  RememberScrollpositionPluginData,
+  ReScrollPluginSettings,
+  ReScrollPluginData,
 } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
 
-const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
+const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true
 };
 
-const DEFAULT_DATA: RememberScrollpositionPluginData = {
+const DEFAULT_DATA: ReScrollPluginData = {
   settings: DEFAULT_SETTINGS,
   scrollpositions: [],
 };
 
 export default class RememberScrollpositionPlugin extends Plugin {
-  data: RememberScrollpositionPluginData;
+  data: ReScrollPluginData;
 
   async onload() {
     await this.loadPluginData();
@@ -31,7 +31,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) return;
 
-        RememberScrollposition.saveScrollPosition(
+        ReScroll.saveScrollPosition(
           view,
           this.data,
           async (modifiedData) => {
@@ -51,7 +51,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const cm = view?.editor?.cm
 
         if (cm) {
-          RememberScrollposition.restoreScrollposition(view, this.data);
+          ReScroll.restoreScrollposition(view, this.data);
         }
       }),
     );
@@ -59,7 +59,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.registerEvent(
       this.app.vault.on("rename", (file, oldName) => {
         const newName = file?.path;
-        RememberScrollposition.updatePathOfEntry(
+        ReScroll.updatePathOfEntry(
           this.data,
           oldName,
           newName,
@@ -70,7 +70,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
     this.registerEvent(
       this.app.vault.on("delete", (deletedFile) => {
-        RememberScrollposition.deleteEntry(
+        ReScroll.deleteEntry(
           this.data,
           deletedFile?.path,
           this.updateData,
@@ -87,7 +87,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
   }
 
-  async updateData(modifiedData: RememberScrollpositionPluginData) {
+  async updateData(modifiedData: ReScrollPluginData) {
     if (!modifiedData) return;
 
     this.data = modifiedData;

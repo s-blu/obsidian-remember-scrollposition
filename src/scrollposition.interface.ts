@@ -1,16 +1,16 @@
 import { EditorRange } from "obsidian";
 
-export interface RememberScrollpositionPluginSettings {
+export interface ReScrollPluginSettings {
   scrollInstantly: boolean
 }
 
-export interface RememberScrollpositionPluginItem {
+export interface ReScrollPluginItem {
   path: string;
   updated: number;
   editorRange: EditorRange
 }
 
-export interface RememberScrollpositionPluginData {
-  settings: RememberScrollpositionPluginSettings;
-  scrollpositions: RememberScrollpositionPluginItem[];
+export interface ReScrollPluginData {
+  settings: ReScrollPluginSettings;
+  scrollpositions: ReScrollPluginItem[];
 }

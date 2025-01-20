@@ -1,15 +1,15 @@
 import { MarkdownView } from "obsidian";
-import { RememberScrollpositionPluginData } from "./scrollposition.interface";
+import { ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
 import { ObsidianCodemirror } from "./codemirror.interface";
 
-export class RememberScrollposition {
+export class ReScroll {
   scrollingDebounce: NodeJS.Timeout;
 
   static saveScrollPosition(
     view: MarkdownView,
-    data: RememberScrollpositionPluginData,
-    callback: (data: RememberScrollpositionPluginData) => void,
+    data: ReScrollPluginData,
+    callback: (data: ReScrollPluginData) => void,
   ) {
     logDebug("attempting to save scroll position")
     if (!view?.file) return;
@@ -26,7 +26,7 @@ export class RememberScrollposition {
     const existingPos = data.scrollpositions.find((p) => p.path === filepath);
     const now = Date.now();
 
-    const editorRange = RememberScrollposition.retrieveEditorRangeForCurrentPosition(cm)
+    const editorRange = ReScroll.retrieveEditorRangeForCurrentPosition(cm)
 
     if (!editorRange) {
       console.error(`RememberScrollposition: Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`)
@@ -75,7 +75,7 @@ export class RememberScrollposition {
 
   static restoreScrollposition(
     view: MarkdownView,
-    data: RememberScrollpositionPluginData,
+    data: ReScrollPluginData,
   ) {
     if (!view || !data) {
       console.warn(
@@ -91,7 +91,7 @@ export class RememberScrollposition {
     // only try to set the scroll position if its on top. If its not, it was already updated before
     if (currentScrollPosition !== 0) return;
 
-    const lastPosition = RememberScrollposition.getScrollpositionEntry(data, view.file?.path)
+    const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path)
 
     // TODO check how old the scroll position is and ignore it if configured in settings
     if (lastPosition && currentScrollPosition === 0) {
@@ -104,8 +104,8 @@ export class RememberScrollposition {
     }
   }
 
-  static updatePathOfEntry(data: RememberScrollpositionPluginData, oldName: string, newName: string | undefined, callback: (data: RememberScrollpositionPluginData) => void) {
-    const entry = RememberScrollposition.getScrollpositionEntry(data, oldName);
+  static updatePathOfEntry(data: ReScrollPluginData, oldName: string, newName: string | undefined, callback: (data: ReScrollPluginData) => void) {
+    const entry = ReScroll.getScrollpositionEntry(data, oldName);
     if (!entry) return;
 
     if (newName) {
@@ -113,11 +113,11 @@ export class RememberScrollposition {
       callback(data)
     } else {
       console.warn(`RememberScrollposition: ${oldName} was renamed, but was not able to fetch new file name. Entry would get inaccessible; deleting.`)
-      RememberScrollposition.deleteEntry(data, oldName, callback);
+      ReScroll.deleteEntry(data, oldName, callback);
     }
   }
 
-  static deleteEntry(data: RememberScrollpositionPluginData, filepath: string, callback: (data: RememberScrollpositionPluginData) => void) {
+  static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => void) {
     if (!data?.scrollpositions) return;
 
     const index = data.scrollpositions.findIndex((p) => p.path === filepath)
@@ -127,7 +127,7 @@ export class RememberScrollposition {
     callback(data);
   }
 
-  private static getScrollpositionEntry(data: RememberScrollpositionPluginData, filepath?: string) {
+  private static getScrollpositionEntry(data: ReScrollPluginData, filepath?: string) {
     if (!filepath) return null;
     return data?.scrollpositions.find(
       (p) => p.path === filepath,

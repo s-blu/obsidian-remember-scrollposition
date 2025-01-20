@@ -1,12 +1,12 @@
 import { Editor, EditorRange } from "obsidian";
-import { RememberScrollposition } from "../src/scrollposition";
+import { ReScroll } from "../src/scrollposition";
 import {
   getMockEditorRange,
   getMockPluginData,
   getMockView,
   mockRetrieveEditorRange,
 } from "./mock.utils";
-import { RememberScrollpositionPluginData } from "src/scrollposition.interface";
+import { ReScrollPluginData } from "src/scrollposition.interface";
 
 describe("RememberScrollposition", () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe("RememberScrollposition", () => {
       const cbSpy = jest.fn();
       mockRetrieveEditorRange(11);
 
-      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
+      ReScroll.saveScrollPosition(mockView, mockData, cbSpy);
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
         scrollpositions: [
@@ -44,7 +44,7 @@ describe("RememberScrollposition", () => {
       const cbSpy = jest.fn();
       mockRetrieveEditorRange(20);
 
-      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
+      ReScroll.saveScrollPosition(mockView, mockData, cbSpy);
 
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
@@ -74,7 +74,7 @@ describe("RememberScrollposition", () => {
       const newTime = new Date("2024-10-02T11:00").valueOf();
       jest.spyOn(Date, "now").mockReturnValue(newTime);
 
-      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
+      ReScroll.saveScrollPosition(mockView, mockData, cbSpy);
 
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
@@ -92,7 +92,7 @@ describe("RememberScrollposition", () => {
       const mockData = getMockPluginData();
       const cbSpy = jest.fn();
 
-      RememberScrollposition.saveScrollPosition(null as any, mockData, cbSpy);
+      ReScroll.saveScrollPosition(null as any, mockData, cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled();
     });
@@ -103,7 +103,7 @@ describe("RememberScrollposition", () => {
       const mockData = getMockPluginData();
       const cbSpy = jest.fn();
 
-      RememberScrollposition.saveScrollPosition(mockView, mockData, cbSpy);
+      ReScroll.saveScrollPosition(mockView, mockData, cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled();
     });
@@ -128,14 +128,14 @@ describe("RememberScrollposition", () => {
       };
 
       const result =
-        RememberScrollposition.retrieveEditorRangeForCurrentPosition(mockCm);
+        ReScroll.retrieveEditorRangeForCurrentPosition(mockCm);
       expect(result?.to?.line).toEqual(123);
       expect(result?.from?.line).toEqual(123);
     });
 
     it("should return null if called with invalid parameters", () => {
       expect(
-        RememberScrollposition.retrieveEditorRangeForCurrentPosition(null),
+        ReScroll.retrieveEditorRangeForCurrentPosition(null),
       ).toEqual(null);
     });
     it("should return null if codemirror does not provide needed properties", () => {
@@ -152,7 +152,7 @@ describe("RememberScrollposition", () => {
       };
 
       expect(
-        RememberScrollposition.retrieveEditorRangeForCurrentPosition(null),
+        ReScroll.retrieveEditorRangeForCurrentPosition(null),
       ).toEqual(null);
 
       // @ts-expect-error should not error out on missing cm functionality
@@ -160,7 +160,7 @@ describe("RememberScrollposition", () => {
       // @ts-expect-error should not error out on missing cm functionality
       mockCm.viewState = { state: {} };
       expect(
-        RememberScrollposition.retrieveEditorRangeForCurrentPosition(mockCm),
+        ReScroll.retrieveEditorRangeForCurrentPosition(mockCm),
       ).toEqual(null);
     });
   });
@@ -177,7 +177,7 @@ describe("RememberScrollposition", () => {
         updated: Date.now(),
       });
 
-      RememberScrollposition.restoreScrollposition(mockView, mockData);
+      ReScroll.restoreScrollposition(mockView, mockData);
 
       // @ts-expect-error usage of inofficial API
       expect(mockView.editor.cm.dispatch).toHaveBeenCalled();
@@ -189,8 +189,8 @@ describe("RememberScrollposition", () => {
 
     it("should do nothing if called with invalid parameters", () => {
       const mockView = getMockView(undefined, 0);
-      RememberScrollposition.restoreScrollposition(null as any, null as any);
-      RememberScrollposition.restoreScrollposition(mockView, null as any);
+      ReScroll.restoreScrollposition(null as any, null as any);
+      ReScroll.restoreScrollposition(mockView, null as any);
 
       expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
     });
@@ -206,7 +206,7 @@ describe("RememberScrollposition", () => {
         updated: Date.now(),
       });
 
-      RememberScrollposition.restoreScrollposition(mockView, mockData);
+      ReScroll.restoreScrollposition(mockView, mockData);
 
       // @ts-expect-error usage of inofficial API
       expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
@@ -217,7 +217,7 @@ describe("RememberScrollposition", () => {
       const mockView = getMockView(undefined, 0);
       const mockData = getMockPluginData();
 
-      RememberScrollposition.restoreScrollposition(mockView, mockData);
+      ReScroll.restoreScrollposition(mockView, mockData);
 
       // @ts-expect-error usage of inofficial API
       expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe("RememberScrollposition", () => {
   });
 
   describe('updatePathOfEntry', () => {
-    let mockData: RememberScrollpositionPluginData;
+    let mockData: ReScrollPluginData;
     let mockEditorRange: EditorRange;
     let updated: number;
 
@@ -243,7 +243,7 @@ describe("RememberScrollposition", () => {
       });
       const cbSpy = jest.fn();
 
-      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
+      ReScroll.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
 
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
@@ -264,7 +264,7 @@ describe("RememberScrollposition", () => {
       });
       const cbSpy = jest.fn();
 
-      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
+      ReScroll.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled()
     })
@@ -276,7 +276,7 @@ describe("RememberScrollposition", () => {
       });
       const cbSpy = jest.fn();
 
-      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", undefined, cbSpy);
+      ReScroll.updatePathOfEntry(mockData, "oldName.md", undefined, cbSpy);
 
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
@@ -286,7 +286,7 @@ describe("RememberScrollposition", () => {
   })
 
   describe('deleteEntry', () => {
-    let mockData: RememberScrollpositionPluginData;
+    let mockData: ReScrollPluginData;
     let mockEditorRange: EditorRange;
     let updated: number;
 
@@ -314,7 +314,7 @@ describe("RememberScrollposition", () => {
       mockData.scrollpositions.push(mockEntry2, mockEntryToDelete, mockEntry3);
       const cbSpy = jest.fn();
 
-      RememberScrollposition.deleteEntry(mockData, "nameToDelete.md", cbSpy);
+      ReScroll.deleteEntry(mockData, "nameToDelete.md", cbSpy);
 
       expect(cbSpy).toHaveBeenCalledWith({
         settings: expect.anything(),
@@ -329,7 +329,7 @@ describe("RememberScrollposition", () => {
       });
       const cbSpy = jest.fn();
 
-      RememberScrollposition.deleteEntry(mockData, "delete/this.md", cbSpy);
+      ReScroll.deleteEntry(mockData, "delete/this.md", cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled()
     })
@@ -343,7 +343,7 @@ describe("RememberScrollposition", () => {
       const cbSpy = jest.fn();
 
       // @ts-expect-error should not crash with invalid data
-      RememberScrollposition.deleteEntry(mockData, undefined, cbSpy);
+      ReScroll.deleteEntry(mockData, undefined, cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled()
     })
@@ -356,7 +356,7 @@ describe("RememberScrollposition", () => {
       });
       const cbSpy = jest.fn();
 
-      RememberScrollposition.deleteEntry({} as any, "delete/this.md", cbSpy);
+      ReScroll.deleteEntry({} as any, "delete/this.md", cbSpy);
 
       expect(cbSpy).not.toHaveBeenCalled();
     })
