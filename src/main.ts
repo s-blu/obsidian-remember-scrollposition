@@ -6,9 +6,8 @@ import {
 } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
 
-// TODO adjust / remove when unneeded
 const DEFAULT_SETTINGS: RememberScrollpositionPluginSettings = {
-  mySetting: "default",
+  scrollInstantly: true
 };
 
 const DEFAULT_DATA: RememberScrollpositionPluginData = {
@@ -21,11 +20,11 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
   async onload() {
     await this.loadPluginData();
-    // TODO on exit/close, save the scroll position - is that necessary?
 
+    // FIXME scrolling via the scrollbar is not detected!
     let scrollingDebounce: NodeJS.Timeout;
     this.registerDomEvent(document, "wheel", (event: any) => {
-      // Reset if we get another wheel event in the timeout duration
+      // Reset if we get another wheel event in the timeout duration to only save when stop scrolling
       window.clearTimeout(scrollingDebounce);
 
       scrollingDebounce = setTimeout(() => {
@@ -44,15 +43,14 @@ export default class RememberScrollpositionPlugin extends Plugin {
       }, 350);
     });
 
-    // FIXME scrolling via the scrollbar is not detected
-
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", (leaf) => {
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-
         // @ts-ignore cm is not part of the official API and I feel bad
-        if (view && view.editor.cm) {
+        const cm = view?.editor?.cm
+
+        if (cm) {
           RememberScrollposition.restoreScrollposition(view, this.data);
         }
       }),

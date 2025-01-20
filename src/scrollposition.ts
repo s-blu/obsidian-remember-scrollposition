@@ -1,6 +1,7 @@
 import { MarkdownView } from "obsidian";
 import { RememberScrollpositionPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
+import { ObsidianCodemirror } from "./codemirror.interface";
 
 export class RememberScrollposition {
   scrollingDebounce: NodeJS.Timeout;
@@ -46,16 +47,17 @@ export class RememberScrollposition {
     callback(data);
   }
 
-  // TODO figure out if you can type that private variable correctly
-  static retrieveEditorRangeForCurrentPosition(codemirror: any) {
+  static retrieveEditorRangeForCurrentPosition(codemirror: ObsidianCodemirror) {
     if (!codemirror) return null;
+
     const scrollSnapshot = codemirror.scrollSnapshot()?.value;
     if (!scrollSnapshot) return null;
+
     const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
     if (!currentLine) return null;
 
-    /** TODO You might be able to use the codemirror.viewport information to adjust the target
-     * line somewhat and allow configuring if we should scroll to top/center or bottom
+    /** TODO You might be able to use the codemirror.viewport information to adjust the 
+     * target line somewhat and allow configuring if we should scroll to top/center or bottom
      * logDebug(scrollSnapshot.range.head, codemirror.viewport)
      */
     
@@ -104,7 +106,6 @@ export class RememberScrollposition {
 
   static updatePathOfEntry(data: RememberScrollpositionPluginData, oldName: string, newName: string | undefined, callback: (data: RememberScrollpositionPluginData) => void) {
     const entry = RememberScrollposition.getScrollpositionEntry(data, oldName);
-
     if (!entry) return;
 
     if (newName) {

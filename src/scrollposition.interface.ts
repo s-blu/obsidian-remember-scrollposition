@@ -1,7 +1,7 @@
 import { EditorRange } from "obsidian";
 
 export interface RememberScrollpositionPluginSettings {
-  mySetting: string; // TODO
+  scrollInstantly: boolean
 }
 
 export interface RememberScrollpositionPluginItem {
