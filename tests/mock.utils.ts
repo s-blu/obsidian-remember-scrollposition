@@ -37,7 +37,7 @@ export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
 export function getMockPluginData() {
   return {
     settings: {
-      mySetting: 'mock'
+      scrollInstantly: true
     },
     scrollpositions: []
   } as ReScrollPluginData;
