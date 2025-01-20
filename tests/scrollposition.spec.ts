@@ -1,4 +1,4 @@
-import { Editor } from "obsidian";
+import { Editor, EditorRange } from "obsidian";
 import { RememberScrollposition } from "../src/scrollposition";
 import {
   getMockEditorRange,
@@ -6,6 +6,7 @@ import {
   getMockView,
   mockRetrieveEditorRange,
 } from "./mock.utils";
+import { RememberScrollpositionPluginData } from "src/scrollposition.interface";
 
 describe("RememberScrollposition", () => {
   beforeEach(() => {
@@ -223,4 +224,65 @@ describe("RememberScrollposition", () => {
       expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
     });
   });
+
+  describe('updatePathOfEntry', () => {
+    let mockData: RememberScrollpositionPluginData;
+    let mockEditorRange: EditorRange;
+    let updated: number;
+
+    beforeEach(() => {
+      mockData = getMockPluginData();
+      mockEditorRange = getMockEditorRange(15);
+      updated = Date.now();
+    })
+    it('should update path to given new name, if entry is available while keeping old updated timestamp', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "oldName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
+
+      expect(cbSpy).toHaveBeenCalledWith({
+        settings: expect.anything(),
+        scrollpositions: [
+          {
+            editorRange: mockEditorRange,
+            path: "path/to/new.md",
+            updated,
+          }
+        ]
+      });
+    })
+    it('should do nothing if no entry for oldName is available', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "otherOldName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", "path/to/new.md", cbSpy);
+
+      expect(cbSpy).not.toHaveBeenCalled()
+    })
+    it('should delete entry if no newName is known', () => {
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: "oldName.md",
+        updated: updated,
+      });
+      const cbSpy = jest.fn();
+
+      RememberScrollposition.updatePathOfEntry(mockData, "oldName.md", undefined, cbSpy);
+
+      expect(cbSpy).toHaveBeenCalledWith(expect(cbSpy).toHaveBeenCalledWith({
+        settings: expect.anything(),
+        scrollpositions: []
+      }));
+    })
+  })
+
 });

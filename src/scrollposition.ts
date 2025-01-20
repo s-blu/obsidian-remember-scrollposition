@@ -85,13 +85,10 @@ export class RememberScrollposition {
       `attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`
     );
     
-
     // only try to set the scroll position if its on top. If its not, it was already updated before
     if (currentScrollPosition !== 0) return;
 
-    const lastPosition = data.scrollpositions.find(
-      (p) => p.path === view.file?.path,
-    );
+    const lastPosition = RememberScrollposition.getScrollpositionEntry(data, view.file?.path)
 
     // TODO check how old the scroll position is and ignore it if configured in settings
     if (lastPosition && currentScrollPosition === 0) {
@@ -102,5 +99,27 @@ export class RememberScrollposition {
         effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
       });
     }
+  }
+
+  static updatePathOfEntry(data: RememberScrollpositionPluginData, oldName: string, newName: string | undefined, callback: (data: RememberScrollpositionPluginData) => void) {
+    const entry = RememberScrollposition.getScrollpositionEntry(data, oldName);
+
+    if (!entry) return;
+
+    if (newName) {
+      entry.path = newName;
+    } else {
+      console.warn(`RememberScrollposition: ${oldName} was renamed, but was not able to fetch new file name. Entry would get inaccessible; deleting.`)
+      // TODO delete inaccessible entry
+    }
+
+    callback(data)
+  }
+
+  private static getScrollpositionEntry(data: RememberScrollpositionPluginData, filepath?: string) {
+    if (!filepath) return null;
+    return data?.scrollpositions.find(
+      (p) => p.path === filepath,
+    );
   }
 }

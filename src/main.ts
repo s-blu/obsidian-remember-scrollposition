@@ -57,13 +57,18 @@ export default class RememberScrollpositionPlugin extends Plugin {
     );
 
     this.registerEvent(
-      this.app.vault.on("rename", (file) => {
-        // TODO update path if available in scrollposition data
+      this.app.vault.on("rename", (file, oldName) => {
+        const newName = file?.path;
+        RememberScrollposition.updatePathOfEntry(this.data, oldName, newName, async (modifiedData: RememberScrollpositionPluginData) => {
+          this.data = modifiedData;
+          await this.saveData(this.data);
+        })
       })
     );
 
     this.registerEvent(
-      this.app.vault.on("delete", (file) => {
+      this.app.vault.on("delete", (...args) => {
+        console.log('delete is triggered', args)
         // TODO remove path if available in scrollposition data
       })
     );
