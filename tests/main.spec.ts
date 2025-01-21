@@ -1,6 +1,6 @@
-import { Plugin } from "obsidian";
+import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import RememberScrollpositionPlugin from "../src/main";
-import { getMockApp } from "./mock.utils";
+import { getMockApp, getMockWorkspaceLeaf } from "./mock.utils";
 import { ReScroll } from "../src/scrollposition";
 
 describe("main", () => {
@@ -18,7 +18,7 @@ describe("main", () => {
     it("should initialize data.scrollpositions with an empty array", async () => {
       await plugin.onload();
 
-      expect(plugin.data).toEqual({
+      expect(plugin["data"]).toEqual({
         settings: expect.anything(),
         scrollpositions: [],
       });
@@ -32,23 +32,56 @@ describe("main", () => {
       expect(loadDataSpy).toHaveBeenCalled();
     });
 
-    it("should attempt to save scroll position on wheel event", async () => {
+    it("should register a scroll event listener and try to restore scroll position for every active Markdown leaf on startup", async () => {
       jest.useFakeTimers();
-      let callback!: () => void;
-      const domEvSpy = jest
-        .spyOn(Plugin.prototype, "registerDomEvent")
-        .mockImplementationOnce((doc: any, event: any, cb: any) => {
-          callback = cb;
-        });
-      const saveScrollPosSpy = jest.spyOn(ReScroll, "saveScrollPosition");
+      const activeLeavesMock: WorkspaceLeaf[] = [];
+
+      for (let i = 0; i < 5; i++) {
+        activeLeavesMock.push(getMockWorkspaceLeaf(`mock-leaf-${i}`));
+      }
+      // add a non-markdownView leaf to make sure they're skipped out
+      activeLeavesMock.splice(2, 0, {} as any);
+
+      const domEvSpy = jest.spyOn(Plugin.prototype, "registerDomEvent").mockImplementation(() => {});
+      const restoreScrollPosSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockReturnValue();
+      jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
+      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => activeLeavesMock);
 
       await plugin.onload();
 
-      expect(domEvSpy).toHaveBeenCalledWith(
-        expect.any(Document),
-        "wheel",
-        expect.any(Function),
-      );
+      expect(domEvSpy).toHaveBeenCalledWith(expect.anything(), "scroll", expect.any(Function));
+      expect(domEvSpy).toHaveBeenCalledTimes(5);
+      expect(restoreScrollPosSpy).toHaveBeenCalledTimes(5);
+    });
+
+    it("should attempt to save scroll position on scroll event after debounce", async () => {
+      jest.useFakeTimers();
+      let callback!: () => void;
+      const leaf = new WorkspaceLeaf();
+      leaf.view = new MarkdownView(leaf); //getMockView();
+      // @ts-ignore internal property
+      leaf.id = "mock";
+      // @ts-ignore internal property
+      leaf.view.contentEl = {
+        querySelector: () => {
+          return {} as Element;
+        },
+      };
+
+      const domEvSpy = jest
+        .spyOn(Plugin.prototype, "registerDomEvent")
+        .mockImplementation((doc: any, event: any, cb: any) => {
+          if (event === "scroll") callback = cb;
+        });
+      const saveScrollPosSpy = jest.spyOn(ReScroll, "saveScrollPosition");
+      jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
+      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => {
+        return [leaf];
+      });
+
+      await plugin.onload();
+
+      expect(domEvSpy).toHaveBeenCalledWith(expect.anything(), "scroll", expect.any(Function));
 
       callback();
       jest.advanceTimersByTime(1000);
@@ -60,17 +93,13 @@ describe("main", () => {
       let callback!: () => void;
       const registerEvSpy = jest.spyOn(Plugin.prototype, "registerEvent");
 
-      const restoreScrollPosSpy = jest
-        .spyOn(ReScroll, "restoreScrollposition")
-        .mockReturnValue();
-      jest
-        .spyOn(plugin.app.workspace, "on")
-        .mockImplementationOnce((event: any, cb: any) => {
-          callback = cb;
+      const restoreScrollPosSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockReturnValue();
+      jest.spyOn(plugin.app.workspace, "on").mockImplementation((event: any, cb: any) => {
+        if (event === "active-leaf-change") callback = cb;
 
-          // to conform expected type
-          return {} as any;
-        });
+        // to conform expected type
+        return {} as any;
+      });
       await plugin.onload();
 
       expect(registerEvSpy).toHaveBeenCalled();
@@ -83,17 +112,13 @@ describe("main", () => {
       let callback!: () => void;
       const registerEvSpy = jest.spyOn(Plugin.prototype, "registerEvent");
 
-      const updateEntrySpy = jest
-        .spyOn(ReScroll, "updatePathOfEntry")
-        .mockReturnValue();
-      const vaultOnSpy = jest
-        .spyOn(plugin.app.vault, "on")
-        .mockImplementation((event: any, cb: any) => {
-          if (event === 'rename') callback = cb;
+      const updateEntrySpy = jest.spyOn(ReScroll, "updatePathOfEntry").mockReturnValue();
+      const vaultOnSpy = jest.spyOn(plugin.app.vault, "on").mockImplementation((event: any, cb: any) => {
+        if (event === "rename") callback = cb;
 
-          // to conform expected type
-          return {} as any;
-        });
+        // to conform expected type
+        return {} as any;
+      });
       await plugin.onload();
 
       expect(registerEvSpy).toHaveBeenCalled();
@@ -107,18 +132,13 @@ describe("main", () => {
       let callback!: () => void;
       const registerEvSpy = jest.spyOn(Plugin.prototype, "registerEvent");
 
-      const deleteEntrySpy = jest
-        .spyOn(ReScroll, "deleteEntry")
-        .mockReturnValue();
-      const vaultOnSpy = jest
-        .spyOn(plugin.app.vault, "on")
-        .mockImplementation((event: any, cb: any) => {
-          if (event === 'delete') callback = cb;
-          
+      const deleteEntrySpy = jest.spyOn(ReScroll, "deleteEntry").mockReturnValue();
+      const vaultOnSpy = jest.spyOn(plugin.app.vault, "on").mockImplementation((event: any, cb: any) => {
+        if (event === "delete") callback = cb;
 
-          // to conform expected type
-          return {} as any;
-        });
+        // to conform expected type
+        return {} as any;
+      });
       await plugin.onload();
 
       expect(registerEvSpy).toHaveBeenCalled();

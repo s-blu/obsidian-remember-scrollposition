@@ -1,4 +1,4 @@
-import { App, MarkdownView } from "obsidian";
+import { App, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "../src/scrollposition";
 import { ReScrollPluginData } from "../src/scrollposition.interface";
 
@@ -16,30 +16,35 @@ export function getMockEditorRange(line = 2) {
 }
 
 export function mockRetrieveEditorRange(line?: number) {
-  return jest
-    .spyOn(ReScroll, "retrieveEditorRangeForCurrentPosition")
-    .mockReturnValue(getMockEditorRange(line));
+  return jest.spyOn(ReScroll, "retrieveEditorRangeForCurrentPosition").mockReturnValue(getMockEditorRange(line));
 }
 
 export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
-  return {
-    file: { path: filepath},
+  const viewObj = new MarkdownView(new WorkspaceLeaf());
+
+  Object.assign(viewObj, {
+    file: { path: filepath },
     editor: {
       cm: {
-        dispatch: jest.fn()
+        dispatch: jest.fn(),
       },
       getScrollInfo: jest.fn().mockReturnValue({ top: scrollTop }),
-      scrollIntoView: jest.fn()
-    }
-  } as unknown as MarkdownView;
+      scrollIntoView: jest.fn(),
+    },
+    contentEl: {
+      querySelector: jest.fn().mockReturnValue({}),
+    },
+  });
+
+  return viewObj;
 }
 
 export function getMockPluginData() {
   return {
     settings: {
-      scrollInstantly: true
+      scrollInstantly: true,
     },
-    scrollpositions: []
+    scrollpositions: [],
   } as ReScrollPluginData;
 }
 
@@ -50,13 +55,26 @@ export function getMockApp() {
       getActiveViewOfType: () => {
         return {
           editor: {
-            cm: {}
-          }
-        }
-      }
+            cm: {},
+          },
+        };
+      },
+      onLayoutReady: jest.fn(),
+      getLeavesOfType: jest.fn().mockReturnValue([]),
     },
     vault: {
-      on: jest.fn()
-    }
+      on: jest.fn(),
+    },
   } as unknown as App;
+}
+
+export function getMockWorkspaceLeaf(id: string) {
+  const leaf = new WorkspaceLeaf();
+  leaf.view = getMockView()
+  leaf.view.leaf = leaf;
+
+  // @ts-ignore internal property
+  leaf.id = id;
+
+  return leaf;
 }
