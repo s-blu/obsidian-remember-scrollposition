@@ -28,7 +28,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
       const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
-        // TODO is this even necessary?
         if (!(view instanceof MarkdownView)) return;
         ReScroll.restoreScrollposition(view, this.data);
 
@@ -42,11 +41,12 @@ export default class RememberScrollpositionPlugin extends Plugin {
         activeLeaves.forEach(leaf => {
           // @ts-ignore usage of internal property
           const id = leaf.id;
-          // TODO is it necessary to manually remove listeners from closed leaves?
           if (this.observedLeaves.indexOf(id) === -1) {
             this.registerScrollListener(leaf)
             this.observedLeaves.push(id)
           }
+
+          // TODO clean up obsolete ids? Unregister those listeners?
         })
       }),
     );
@@ -84,7 +84,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO be able to exclude or include certain paths for saving only
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
 
-    // TODO add a menu entry, if possible, to reset/forget the scroll position ? theortically you only need to scroll back up, though
   }
 
   async updateData(modifiedData: ReScrollPluginData) {
