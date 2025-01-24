@@ -176,11 +176,8 @@ describe("RememberScrollposition", () => {
 
       ReScroll.restoreScrollposition(mockView, mockData);
 
-      // @ts-expect-error usage of inofficial API
-      expect(mockView.editor.cm.dispatch).toHaveBeenCalled();
-      expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
-        mockEditorRange,
-        true,
+      expect(mockView.editor.transaction).toHaveBeenCalledWith(
+        {selection: mockEditorRange}
       );
     });
 

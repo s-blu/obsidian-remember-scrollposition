@@ -101,7 +101,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
     const id = leaf?.id;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
-      logDebug('scrolling', id)
       this.savePositionOnEndOfScrolling(view, id);
     });
   }
@@ -111,7 +110,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
     window.clearTimeout(this.scrollingDebounce);
 
     this.scrollingDebounce = setTimeout(() => {
-      logDebug('scroll debounce triggered', view.file?.path, id)
       if (!view) return;
 
       ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {

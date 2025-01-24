@@ -11,7 +11,6 @@ export class ReScroll {
     data: ReScrollPluginData,
     callback: (data: ReScrollPluginData) => void,
   ) {
-    logDebug("attempting to save scroll position", view?.file?.path)
     if (!view?.file) return;
     // TODO check if you can get the line info from within official obsidian API 
     // @ts-ignore cm is not part of the official API and I feel bad 
@@ -98,10 +97,7 @@ export class ReScroll {
     if (lastPosition && currentScrollPosition === 0) {
       logDebug("dispatching scrollIntoView", lastPosition);
 
-      // @ts-ignore cm is not part of the official API and I feel bad 
-      view.editor.cm.dispatch({
-        effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
-      });
+      view.editor.transaction({ selection: lastPosition.editorRange });
     }
   }
 

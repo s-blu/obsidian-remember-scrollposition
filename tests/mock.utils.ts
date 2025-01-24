@@ -30,6 +30,7 @@ export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
       },
       getScrollInfo: jest.fn().mockReturnValue({ top: scrollTop }),
       scrollIntoView: jest.fn(),
+      transaction: jest.fn()
     },
     contentEl: {
       querySelector: jest.fn().mockReturnValue({}),
