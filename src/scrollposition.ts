@@ -1,6 +1,6 @@
 import { MarkdownView } from "obsidian";
 import { ReScrollPluginData } from "./scrollposition.interface";
-import { logDebug } from "./debugLog";
+import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "./codemirror.interface";
 
 export class ReScroll {

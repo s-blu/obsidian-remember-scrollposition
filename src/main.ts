@@ -1,7 +1,7 @@
 import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
-import { logDebug } from "./debugLog";
+import { logDebug } from "./debug-log";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
