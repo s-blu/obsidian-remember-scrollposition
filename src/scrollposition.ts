@@ -1,7 +1,7 @@
 import { MarkdownView } from "obsidian";
 import { ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
-import { ObsidianCodemirror } from "./codemirror.interface";
+import { ViewUtils } from "./view.utils";
 
 export class ReScroll {
   scrollingDebounce: NodeJS.Timeout;
@@ -11,109 +11,139 @@ export class ReScroll {
     data: ReScrollPluginData,
     callback: (data: ReScrollPluginData) => void,
   ) {
-    logDebug("attempting to save scroll position", view?.file?.path)
+    logDebug("attempting to save scroll position", view?.file?.path);
     if (!view?.file) return;
-    // TODO check if you can get the line info from within official obsidian API 
-    // @ts-ignore cm is not part of the official API and I feel bad 
-    const cm = view.editor?.cm; 
-
-    if (!cm) {
-      console.error('RememberScrollposition: No access to codemirror instance available, thus cannot retrieve necessary information to save scroll position. Exiting.')
-      return;
-    }
 
     const filepath = view.file.path;
     const existingPos = data.scrollpositions.find((p) => p.path === filepath);
     const now = Date.now();
 
-    const editorRange = ReScroll.retrieveEditorRangeForCurrentPosition(cm)
+    const scrollInfo = ReScroll.retrieveScrollInfoCurrentPosition(view);
 
-    if (!editorRange) {
-      console.error(`RememberScrollposition: Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`)
+    if (!scrollInfo) {
+      console.error(
+        `RememberScrollposition: Could not retrieve editor range to save scroll position for ${filepath}. Exiting.`,
+      );
       return;
     }
 
-    logDebug(`${existingPos ? 'updating' : 'saving new'} position ${editorRange?.to?.line} for ${filepath}`)
+    logDebug(
+      `${existingPos ? "updating" : "saving new"} position ${scrollInfo.editorRange?.to?.line}/${scrollInfo.scrollTop} for ${filepath}`,
+    );
     if (existingPos) {
-      existingPos.editorRange = editorRange;
+      existingPos.editorRange = scrollInfo.editorRange;
       existingPos.updated = now;
+      existingPos.scrollTop = scrollInfo.scrollTop;
     } else {
       data.scrollpositions.push({
-        editorRange: editorRange,
+        editorRange: scrollInfo.editorRange,
         path: filepath,
         updated: now,
+        scrollTop: scrollInfo.scrollTop,
       });
     }
 
     callback(data);
   }
 
-  static retrieveEditorRangeForCurrentPosition(codemirror: ObsidianCodemirror) {
-    if (!codemirror) return null;
+  static retrieveScrollInfoCurrentPosition(view: MarkdownView) {
+    if (!view) return null;
+    //@ts-ignore internal property
+    const codemirror = view.editor.cm;
 
-    const scrollSnapshot = codemirror.scrollSnapshot()?.value;
-    if (!scrollSnapshot) return null;
+    let scrollTop;
+    if (ViewUtils.isViewInReadMode(view)) {
+      scrollTop = ViewUtils.getReadScrollContainer(view)?.scrollTop;
+    } else {
+      scrollTop = codemirror.scrollSnapshot()?.value?.range.head;
+    }
 
-    const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
+    if (!scrollTop) return null;
+
+    const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollTop);
     if (!currentLine) return null;
 
-    /** TODO You might be able to use the codemirror.viewport information to adjust the 
+    /** TODO You might be able to use the codemirror.viewport information to adjust the
      * target line somewhat and allow configuring if we should scroll to top/center or bottom
      * logDebug(scrollSnapshot.range.head, codemirror.viewport)
      */
-    
+
     return {
-      to: {
-        line: currentLine.number,
-        ch: 1,
-      },
-      from: {
-        line: currentLine.number,
-        ch: 1,
+      scrollTop,
+      editorRange: {
+        to: {
+          line: currentLine.number,
+          ch: 1,
+        },
+        from: {
+          line: currentLine.number,
+          ch: 1,
+        },
       },
     };
   }
 
-  static restoreScrollposition(
-    view: MarkdownView,
-    data: ReScrollPluginData,
-  ) {
+  static restoreScrollposition(view: MarkdownView, data: ReScrollPluginData) {
     if (!view || !data) {
-      console.warn(
-        "RememberScrollposition: restoreScrollposition was called with invalid parameters.",
-      );
+      console.warn("RememberScrollposition: restoreScrollposition was called with invalid parameters.");
       return;
     }
     const currentScrollPosition = view.editor?.getScrollInfo()?.top;
-    logDebug(
-      `attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`
-    );
-    
+    logDebug(`attempt to restore scroll position for ${view.file?.path}, current: ${currentScrollPosition}`);
+
     // only try to set the scroll position if its on top. If its not, it was already updated before
     if (currentScrollPosition !== 0) return;
 
-    const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path)
+    const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path);
 
-    // TODO check how old the scroll position is and ignore it if configured in settings
-    if (lastPosition && currentScrollPosition === 0) {
-      logDebug("dispatching scrollIntoView", lastPosition);
+    if (lastPosition) {
+      logDebug(
+        `restoring scroll position for ${view?.file?.path} to line ${lastPosition.editorRange.to.line} or coord ${lastPosition.scrollTop}`,
+      );
 
-      // @ts-ignore cm is not part of the official API and I feel bad 
-      view.editor.cm.dispatch({
-        effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
-      });
+      const isReadMode = ViewUtils.isViewInReadMode(view);
+      const isReadMode2 = !!view.contentEl.querySelector(
+        ".markdown-reading-view .markdown-rendered .markdown-preview-section .markdown-preview-pusher",
+      );
+
+      console.log("isReadMode?", isReadMode, isReadMode2);
+      console.log("contentEl", view.contentEl);
+      console.log("view", view.getMode());
+
+      if (isReadMode) {
+        ViewUtils.getReadScrollContainer(view)?.scroll({ top: lastPosition.scrollTop, behavior: "smooth" });
+      } else {
+        view.editor.transaction({ selection: lastPosition.editorRange });
+      }
+
+      // view.editor.scrollIntoView(lastPosition.editorRange, true)
+      // view.currentMode.applyScroll(lastPosition.editorRange.from.line * 100)
+      // view.previewMode.applyScroll(lastPosition.editorRange.from.line * 100)
+
+      // view.editor.transaction({selection: lastPosition.editorRange})
+      // @ts-ignore cm is not part of the official API and I feel bad
+      // view.editor.cm.dispatch({
+      //   effects: view.editor.scrollIntoView(lastPosition.editorRange, true),
+      // });
     }
   }
 
-  static updatePathOfEntry(data: ReScrollPluginData, oldName: string, newName: string | undefined, callback: (data: ReScrollPluginData) => void) {
+  static updatePathOfEntry(
+    data: ReScrollPluginData,
+    oldName: string,
+    newName: string | undefined,
+    callback: (data: ReScrollPluginData) => void,
+  ) {
     const entry = ReScroll.getScrollpositionEntry(data, oldName);
     if (!entry) return;
 
     if (newName) {
       entry.path = newName;
-      callback(data)
+      callback(data);
     } else {
-      console.warn(`RememberScrollposition: ${oldName} was renamed, but was not able to fetch new file name. Entry would get inaccessible; deleting.`)
+      console.warn(
+        `RememberScrollposition: ${oldName} was renamed, but was not able to fetch new file name. Entry would get inaccessible; deleting.`,
+      );
       ReScroll.deleteEntry(data, oldName, callback);
     }
   }
@@ -121,7 +151,7 @@ export class ReScroll {
   static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => void) {
     if (!data?.scrollpositions) return;
 
-    const index = data.scrollpositions.findIndex((p) => p.path === filepath)
+    const index = data.scrollpositions.findIndex((p) => p.path === filepath);
     if (index === -1) return;
 
     data.scrollpositions.splice(index, 1);
@@ -130,8 +160,6 @@ export class ReScroll {
 
   private static getScrollpositionEntry(data: ReScrollPluginData, filepath?: string) {
     if (!filepath) return null;
-    return data?.scrollpositions.find(
-      (p) => p.path === filepath,
-    );
+    return data?.scrollpositions.find((p) => p.path === filepath);
   }
 }

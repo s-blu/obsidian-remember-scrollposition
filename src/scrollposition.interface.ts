@@ -7,7 +7,8 @@ export interface ReScrollPluginSettings {
 export interface ReScrollPluginItem {
   path: string;
   updated: number;
-  editorRange: EditorRange
+  editorRange: EditorRange,
+  scrollTop: number
 }
 
 export interface ReScrollPluginData {

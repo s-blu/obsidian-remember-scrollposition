@@ -2,6 +2,7 @@ import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debugLog";
+import { ViewUtils } from "./view.utils";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
@@ -31,23 +32,23 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (!(view instanceof MarkdownView)) return;
         ReScroll.restoreScrollposition(view, this.data);
 
-        this.registerScrollListener(leaf)
+        this.registerScrollListener(leaf);
       });
     });
 
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
-        activeLeaves.forEach(leaf => {
+        activeLeaves.forEach((leaf) => {
           // @ts-ignore usage of internal property
           const id = leaf.id;
           if (this.observedLeaves.indexOf(id) === -1) {
-            this.registerScrollListener(leaf)
-            this.observedLeaves.push(id)
+            this.registerScrollListener(leaf);
+            this.observedLeaves.push(id);
           }
 
           // TODO clean up obsolete ids? Unregister those listeners?
-        })
+        });
       }),
     );
 
@@ -83,7 +84,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
     // TODO be able to exclude or include certain paths for saving only
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
-
   }
 
   async updateData(modifiedData: ReScrollPluginData) {
@@ -96,23 +96,28 @@ export default class RememberScrollpositionPlugin extends Plugin {
   registerScrollListener(leaf: WorkspaceLeaf) {
     if (!leaf?.view || !(leaf.view instanceof MarkdownView)) return;
     const view = leaf.view as MarkdownView;
-    const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
+    const cmScrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
+    const readScrollEl = ViewUtils.getReadScrollContainer(view);
     // @ts-ignore usage of internal property
     const id = leaf?.id;
 
-    this.registerDomEvent(scrollEl, "scroll", () => {
-      logDebug('scrolling', id)
-      this.savePositionOnEndOfScrolling(view, id);
+    this.registerDomEvent(cmScrollEl, "scroll", () => {
+      this.savePositionOnEndOfScrolling(view, id, false);
+    });
+    this.registerDomEvent(readScrollEl, "scroll", () => {
+      this.savePositionOnEndOfScrolling(view, id, true);
     });
   }
 
-  savePositionOnEndOfScrolling(view: MarkdownView, id: string) {
+  savePositionOnEndOfScrolling(view: MarkdownView, id: string, readMode: boolean) {
     // Reset if we get another event in the timeout duration to only save when stop scrolling
     window.clearTimeout(this.scrollingDebounce);
 
     this.scrollingDebounce = setTimeout(() => {
-      logDebug('scroll debounce triggered', view.file?.path, id)
+      logDebug("scroll debounce triggered", view.file?.path, id);
       if (!view) return;
+      // TODO this makes no sense, the other scroll isnot triggered. though why does it trigger when opening up the file?
+      if (ViewUtils.isViewInReadMode(view) !== readMode) return;
 
       ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
         this.updateData(modifiedData);
