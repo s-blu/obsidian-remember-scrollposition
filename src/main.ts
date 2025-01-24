@@ -20,6 +20,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
 
+  private justOpened;
+
   async onload() {
     await this.loadPluginData();
 
@@ -38,6 +40,10 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
+
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        this.justOpened = view?.file?.path
+        console.log('layout change')
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
         activeLeaves.forEach((leaf) => {
           // @ts-ignore usage of internal property
@@ -55,6 +61,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
+        console.log('active leaf change')
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) return;
         // @ts-ignore cm is not part of the official API and I feel bad
@@ -105,6 +112,10 @@ export default class RememberScrollpositionPlugin extends Plugin {
       this.savePositionOnEndOfScrolling(view, id, false);
     });
     this.registerDomEvent(readScrollEl, "scroll", () => {
+      if (this.justOpened === view?.file?.name) {
+        // this.justOpened = null;
+        return;
+      }
       this.savePositionOnEndOfScrolling(view, id, true);
     });
   }

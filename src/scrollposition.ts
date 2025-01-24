@@ -95,23 +95,17 @@ export class ReScroll {
     if (currentScrollPosition !== 0) return;
 
     const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path);
+    console.log("lastpos", lastPosition);
 
     if (lastPosition) {
       logDebug(
         `restoring scroll position for ${view?.file?.path} to line ${lastPosition.editorRange.to.line} or coord ${lastPosition.scrollTop}`,
       );
 
-      const isReadMode = ViewUtils.isViewInReadMode(view);
-      const isReadMode2 = !!view.contentEl.querySelector(
-        ".markdown-reading-view .markdown-rendered .markdown-preview-section .markdown-preview-pusher",
-      );
-
-      console.log("isReadMode?", isReadMode, isReadMode2);
-      console.log("contentEl", view.contentEl);
-      console.log("view", view.getMode());
-
-      if (isReadMode) {
-        ViewUtils.getReadScrollContainer(view)?.scroll({ top: lastPosition.scrollTop, behavior: "smooth" });
+      if (ViewUtils.isViewInReadMode(view)) {
+        ViewUtils.getReadScrollContainer(view)?.scroll({ top: lastPosition.scrollTop, behavior: "instant" });
+        // ViewUtils.getReadScrollContainer(view)?.scroll(lastPosition.scrollTop, 0);
+        // ViewUtils.getReadScrollContainer(view)?.scrollIntoView({ top: lastPosition.scrollTop})
       } else {
         view.editor.transaction({ selection: lastPosition.editorRange });
       }
