@@ -2,6 +2,7 @@ import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
 import { logDebug } from "./debug-log";
+import { RescrollSettingTab } from "./scrollposition-settings";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
@@ -14,13 +15,18 @@ const DEFAULT_DATA: ReScrollPluginData = {
 
 // FIXME scroll position is not restored in read mode
 export default class RememberScrollpositionPlugin extends Plugin {
-  private data: ReScrollPluginData;
+  public data: ReScrollPluginData;
   // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
 
   async onload() {
     await this.loadPluginData();
+    this.addSettingTab(new RescrollSettingTab(this.app, this));
+
+    this.addRibbonIcon("gallery-vertical-end", "Scroll to saved position", (evt: MouseEvent) => {
+      this.triggerScrollpositionRestore();
+    });
 
     // initially restore scroll position on all open editors
     // listen to scroll events on open editors
@@ -31,36 +37,31 @@ export default class RememberScrollpositionPlugin extends Plugin {
         if (!(view instanceof MarkdownView)) return;
         ReScroll.restoreScrollposition(view, this.data);
 
-        this.registerScrollListener(leaf)
+        this.registerScrollListener(leaf);
       });
     });
 
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
-        activeLeaves.forEach(leaf => {
+        activeLeaves.forEach((leaf) => {
           // @ts-ignore usage of internal property
           const id = leaf.id;
           if (this.observedLeaves.indexOf(id) === -1) {
-            this.registerScrollListener(leaf)
-            this.observedLeaves.push(id)
+            this.registerScrollListener(leaf);
+            this.observedLeaves.push(id);
           }
 
           // TODO clean up obsolete ids? Unregister those listeners?
-        })
+        });
       }),
     );
 
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!view) return;
-        // @ts-ignore cm is not part of the official API and I feel bad
-        const cm = view?.editor?.cm;
-
-        if (cm) {
-          ReScroll.restoreScrollposition(view, this.data);
+        if (this.data.settings.scrollInstantly) {
+          this.triggerScrollpositionRestore();
         }
       }),
     );
@@ -78,12 +79,18 @@ export default class RememberScrollpositionPlugin extends Plugin {
       }),
     );
 
-    // TODO add settings: let the user decide to scroll instantly upon opening or by clicking a ribbon icon
-    // TODO when scrolling instantly, allow disabling the ribbon icon
-    // TODO add a ribbon icon to jump to the scroll position and make it configurable. see example_main
-    // TODO be able to exclude or include certain paths for saving only
-    // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
+    }
 
+  triggerScrollpositionRestore() {
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return;
+    // @ts-ignore cm is not part of the official API and I feel bad
+    const cm = view?.editor?.cm;
+
+    // TODO is cm still necessary?
+    if (cm) {
+      ReScroll.restoreScrollposition(view, this.data);
+    }
   }
 
   async updateData(modifiedData: ReScrollPluginData) {
