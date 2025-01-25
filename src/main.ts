@@ -3,10 +3,15 @@ import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { RescrollSettingTab } from "./scrollposition-settings";
-import translations from "./translations.json"
+import translations from "./translations.json";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
+  maxAge: {
+    raw: "2 weeks",
+    unit: "weeks",
+    amount: "2",
+  },
 };
 
 const DEFAULT_DATA: ReScrollPluginData = {
@@ -32,7 +37,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     });
 
     this.addCommand({
-      id: 'restore-scrollposition',
+      id: "restore-scrollposition",
       name: translations.action_description,
       callback: () => {
         this.triggerScrollpositionRestore();

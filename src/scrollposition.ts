@@ -1,4 +1,4 @@
-import { MarkdownView } from "obsidian";
+import { MarkdownView, moment } from "obsidian";
 import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
@@ -85,9 +85,17 @@ export class ReScroll {
     if (currentScrollPosition !== 0) return;
 
     const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path);
+    if (!lastPosition) return;
 
-    // TODO check how old the scroll position is and ignore it if configured in settings
-    if (lastPosition && currentScrollPosition === 0) {
+    const updated = moment(lastPosition.updated)
+    const maxAge = moment().subtract(moment.duration(data.settings.maxAge.amount, data.settings.maxAge.unit));
+
+    console.log('upmax', updated, maxAge)
+    if (updated < maxAge) {
+      console.log('TOO OLD', lastPosition)
+    }
+
+    if (currentScrollPosition === 0) {
       logDebug("dispatching scrollIntoView", lastPosition);
 
       view.editor.scrollIntoView(lastPosition.editorRange, true);
