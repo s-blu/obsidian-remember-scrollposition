@@ -1,6 +1,6 @@
 import { App, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "../src/scrollposition";
-import { ReScrollPluginData } from "../src/scrollposition.interface";
+import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
 
 export function getMockEditorRange(line = 2) {
   return {

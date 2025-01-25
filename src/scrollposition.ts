@@ -1,7 +1,7 @@
 import { MarkdownView } from "obsidian";
-import { ReScrollPluginData } from "./scrollposition.interface";
+import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
-import { ObsidianCodemirror } from "./codemirror.interface";
+import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
 
 export class ReScroll {
   scrollingDebounce: NodeJS.Timeout;

@@ -7,6 +7,9 @@ export class Plugin {
   registerEvent() {}
   registerDomEvent() {}
   registerInterval() {}
+  addSettingTab() {}
+  addRibbonIcon() {}
+  addCommand() {}
 
   loadData() {
     return {};
@@ -28,3 +31,5 @@ export class WorkspaceLeaf {
     this.id = id;
   }
 }
+
+export class PluginSettingTab {}

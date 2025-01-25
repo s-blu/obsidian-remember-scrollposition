@@ -6,7 +6,7 @@ import {
   getMockView,
   mockRetrieveEditorRange,
 } from "./mock.utils";
-import { ReScrollPluginData } from "src/scrollposition.interface";
+import { ReScrollPluginData } from "interfaces/scrollposition.interface";
 
 describe("RememberScrollposition", () => {
   beforeEach(() => {

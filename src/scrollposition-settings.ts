@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import RememberScrollpositionPlugin from "./main";
-import { ReScrollPluginSettings } from "./scrollposition.interface";
+import { ReScrollPluginSettings } from "../interfaces/scrollposition.interface";
 
 export class RescrollSettingTab extends PluginSettingTab {
   plugin: RememberScrollpositionPlugin;

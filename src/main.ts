@@ -1,6 +1,6 @@
 import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
-import { ReScrollPluginSettings, ReScrollPluginData } from "./scrollposition.interface";
+import { ReScrollPluginSettings, ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { RescrollSettingTab } from "./scrollposition-settings";
 
@@ -37,7 +37,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
         this.triggerScrollpositionRestore();
       },
     });
-    // TODO add class to poetentially hide the button
 
     // initially restore scroll position on all open editors
     // listen to scroll events on open editors
