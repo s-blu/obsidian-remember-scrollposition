@@ -163,7 +163,7 @@ describe("RememberScrollposition", () => {
   });
 
   describe("restoreScrollposition", () => {
-    it("should load last scroll position and dispatch scrollIntoView effect to codemirror", () => {
+    it("should load last scroll position and call scrollIntoView", () => {
       const mockView = getMockView(undefined, 0);
       const mockData = getMockPluginData();
       const mockEditorRange = getMockEditorRange(15);
@@ -176,8 +176,8 @@ describe("RememberScrollposition", () => {
 
       ReScroll.restoreScrollposition(mockView, mockData);
 
-      expect(mockView.editor.transaction).toHaveBeenCalledWith(
-        {selection: mockEditorRange}
+      expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
+        mockEditorRange, true
       );
     });
 

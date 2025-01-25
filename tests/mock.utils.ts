@@ -9,7 +9,7 @@ export function getMockEditorRange(line = 2) {
       ch: 1,
     },
     from: {
-      line: 0,
+      line: line,
       ch: 1,
     },
   };
@@ -44,6 +44,7 @@ export function getMockPluginData() {
   return {
     settings: {
       scrollInstantly: true,
+      maxAge: 7
     },
     scrollpositions: [],
   } as ReScrollPluginData;

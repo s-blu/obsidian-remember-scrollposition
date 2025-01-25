@@ -13,6 +13,7 @@ describe("main", () => {
 
     beforeEach(() => {
       plugin = new RememberScrollpositionPlugin(getMockApp(), {} as any);
+      jest.resetAllMocks();
     });
 
     it("should initialize data.scrollpositions with an empty array", async () => {
@@ -23,6 +24,38 @@ describe("main", () => {
         scrollpositions: [],
       });
     });
+
+    it("should initialize settings with default settings", async () => {
+      await plugin.onload();
+
+      expect(plugin["data"]).toEqual({
+        settings: {
+          scrollInstantly: true,
+          maxAge: 14
+        },
+        scrollpositions: expect.anything(),
+      });
+    });
+
+    it('should register a ribbon icon to manually restore scroll position on active file', async () => {
+      const ribbonSpy = jest.spyOn(Plugin.prototype, 'addRibbonIcon').mockImplementation((icon, title, cb) => cb({} as any));
+      const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
+
+      await plugin.onload();
+
+      expect(ribbonSpy).toHaveBeenCalled();
+      expect(restoreSpy).toHaveBeenCalled();
+    })
+
+    it('should add command to manually restore scroll position on active file', async () => {
+      const cmdSpy = jest.spyOn(Plugin.prototype, 'addCommand').mockImplementation(({ callback }) => callback && callback());
+      const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
+
+      await plugin.onload();
+
+      expect(cmdSpy).toHaveBeenCalled();
+      expect(restoreSpy).toHaveBeenCalled();
+    })
 
     it("should load saved data on startup", async () => {
       const loadDataSpy = jest.spyOn(Plugin.prototype, "loadData");
