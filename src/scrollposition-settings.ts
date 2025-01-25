@@ -1,4 +1,4 @@
-import { App, Notice, PluginSettingTab, Setting, moment } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import RememberScrollpositionPlugin from "./main";
 import { ReScrollPluginSettings } from "../interfaces/scrollposition.interface";
 import translations from "./translations.json";

@@ -20,7 +20,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
   // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
 
-  private ribbon: HTMLElement;
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
 
@@ -28,7 +27,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.loadPluginData();
     this.addSettingTab(new RescrollSettingTab(this.app, this));
 
-    this.ribbon = this.addRibbonIcon("gallery-vertical-end", translations.action_description, (evt: MouseEvent) => {
+    this.addRibbonIcon("gallery-vertical-end", translations.action_description, (evt: MouseEvent) => {
       this.triggerScrollpositionRestore();
     });
 

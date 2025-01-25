@@ -1,4 +1,4 @@
-import { MarkdownView, moment } from "obsidian";
+import { MarkdownView} from "obsidian";
 import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
