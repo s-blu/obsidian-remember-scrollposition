@@ -31,31 +31,35 @@ describe("main", () => {
       expect(plugin["data"]).toEqual({
         settings: {
           scrollInstantly: true,
-          maxAge: 14
+          maxAge: 14,
         },
         scrollpositions: expect.anything(),
       });
     });
 
-    it('should register a ribbon icon to manually restore scroll position on active file', async () => {
-      const ribbonSpy = jest.spyOn(Plugin.prototype, 'addRibbonIcon').mockImplementation((icon, title, cb) => cb({} as any));
+    it("should register a ribbon icon to manually restore scroll position on active file", async () => {
+      const ribbonSpy = jest
+        .spyOn(Plugin.prototype, "addRibbonIcon")
+        .mockImplementation((icon, title, cb) => cb({} as any));
       const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
 
       await plugin.onload();
 
       expect(ribbonSpy).toHaveBeenCalled();
       expect(restoreSpy).toHaveBeenCalled();
-    })
+    });
 
-    it('should add command to manually restore scroll position on active file', async () => {
-      const cmdSpy = jest.spyOn(Plugin.prototype, 'addCommand').mockImplementation(({ callback }) => callback && callback());
+    it("should add command to manually restore scroll position on active file", async () => {
+      const cmdSpy = jest
+        .spyOn(Plugin.prototype, "addCommand")
+        .mockImplementation(({ callback }) => callback && callback());
       const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
 
       await plugin.onload();
 
       expect(cmdSpy).toHaveBeenCalled();
       expect(restoreSpy).toHaveBeenCalled();
-    })
+    });
 
     it("should load saved data on startup", async () => {
       const loadDataSpy = jest.spyOn(Plugin.prototype, "loadData");
@@ -106,7 +110,8 @@ describe("main", () => {
         .mockImplementation((doc: any, event: any, cb: any) => {
           if (event === "scroll") callback = cb;
         });
-      const saveScrollPosSpy = jest.spyOn(ReScroll, "saveScrollPosition");
+      const saveScrollPosSpy = jest.spyOn(ReScroll, "saveScrollPosition").mockImplementation((view, data, cb) => cb(data));
+      const saveSpy = jest.spyOn(Plugin.prototype, 'saveData')
       jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
       jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => {
         return [leaf];
@@ -120,6 +125,7 @@ describe("main", () => {
       jest.advanceTimersByTime(1000);
 
       expect(saveScrollPosSpy).toHaveBeenCalled();
+      expect(saveSpy).toHaveBeenCalled()
     });
 
     it("should attempt to restore scroll position on active-leaf-change", async () => {
@@ -139,6 +145,23 @@ describe("main", () => {
 
       callback();
       expect(restoreScrollPosSpy).toHaveBeenCalled();
+    });
+
+    it("should not restore scroll position on active leaf change if scrollInstantly is false", async () => {
+      let callback!: () => void;
+
+      const restoreScrollPosSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockReturnValue();
+      jest.spyOn(plugin.app.workspace, "on").mockImplementation((event: any, cb: any) => {
+        if (event === "active-leaf-change") callback = cb;
+
+        // to conform expected type
+        return {} as any;
+      });
+      await plugin.onload();
+      plugin.data.settings.scrollInstantly = false;
+
+      callback();
+      expect(restoreScrollPosSpy).not.toHaveBeenCalled();
     });
 
     it("should call updatePathOfEntry on rename event", async () => {
@@ -179,6 +202,35 @@ describe("main", () => {
 
       callback();
       expect(deleteEntrySpy).toHaveBeenCalled();
+    });
+
+    it("should register scroll listeners on new leaves on layout change", async () => {
+      let callback!: () => void;
+      const mockLeaf1 = getMockWorkspaceLeaf("l1");
+      const mockLeaf2 = getMockWorkspaceLeaf("l2");
+      const mockLeaf3 = getMockWorkspaceLeaf("l3");
+
+      const vaultOnSpy = jest.spyOn(plugin.app.workspace, "on").mockImplementation((event: any, cb: any) => {
+        if (event === "layout-change") callback = cb;
+
+        // to conform expected type
+        return {} as any;
+      });
+      jest.spyOn(plugin.app.workspace, 'onLayoutReady').mockImplementation(cb => cb())
+      const registerScrollSpy = jest.spyOn(plugin, "registerScrollListener");
+
+      jest
+        .spyOn(plugin.app.workspace, "getLeavesOfType")
+        .mockReturnValueOnce([mockLeaf1, mockLeaf2]) // for initial processing
+        .mockReturnValueOnce([mockLeaf1, mockLeaf2, mockLeaf3]); // for the event
+
+      await plugin.onload();
+
+      expect(registerScrollSpy).toHaveBeenCalledTimes(2);
+
+      callback();
+      expect(registerScrollSpy).toHaveBeenCalledTimes(3);
+      expect(registerScrollSpy).toHaveBeenLastCalledWith(mockLeaf3);
     });
   });
 });

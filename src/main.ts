@@ -45,12 +45,15 @@ export default class RememberScrollpositionPlugin extends Plugin {
       const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
+        // @ts-ignore usage of internal property
+        const id = leaf.id;
         if (!(view instanceof MarkdownView)) return;
         if (this.data.settings.scrollInstantly) {
           ReScroll.restoreScrollposition(view, this.data);
         }
 
         this.registerScrollListener(leaf);
+        this.observedLeaves.push(id);
       });
     });
 
