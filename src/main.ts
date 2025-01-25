@@ -17,6 +17,8 @@ const DEFAULT_DATA: ReScrollPluginData = {
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
   // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
+
+  private ribbon: HTMLElement;
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
 
@@ -24,9 +26,10 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.loadPluginData();
     this.addSettingTab(new RescrollSettingTab(this.app, this));
 
-    this.addRibbonIcon("gallery-vertical-end", "Scroll to saved position", (evt: MouseEvent) => {
+    this.ribbon = this.addRibbonIcon("gallery-vertical-end", "Scroll active file to saved position", (evt: MouseEvent) => {
       this.triggerScrollpositionRestore();
     });
+    // TODO add class to poetentially hide the button
 
     // initially restore scroll position on all open editors
     // listen to scroll events on open editors
@@ -35,7 +38,9 @@ export default class RememberScrollpositionPlugin extends Plugin {
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
         if (!(view instanceof MarkdownView)) return;
-        ReScroll.restoreScrollposition(view, this.data);
+        if (this.data.settings.scrollInstantly) {
+          ReScroll.restoreScrollposition(view, this.data);
+        }
 
         this.registerScrollListener(leaf);
       });
@@ -60,9 +65,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
-        if (this.data.settings.scrollInstantly) {
-          this.triggerScrollpositionRestore();
-        }
+        if (!this.data.settings.scrollInstantly) return;
+        this.triggerScrollpositionRestore();
       }),
     );
 
@@ -78,8 +82,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         ReScroll.deleteEntry(this.data, deletedFile?.path, this.updateData);
       }),
     );
-
-    }
+  }
 
   triggerScrollpositionRestore() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -125,6 +128,17 @@ export default class RememberScrollpositionPlugin extends Plugin {
         logDebug("saved modified data", this.data);
       });
     }, 350);
+  }
+
+  onSettingUpdate<key extends keyof ReScrollPluginSettings>(settingName: key, newValue: ReScrollPluginSettings[key]) {
+    switch (settingName) {
+      case "scrollInstantly":
+        if (newValue) {
+          this.ribbon.addClass("rescroll-hidden");
+        } else {
+          this.ribbon.removeClass("rescroll-hidden");
+        }
+    }
   }
 
   onunload() {}
