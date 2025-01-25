@@ -29,6 +29,14 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.ribbon = this.addRibbonIcon("gallery-vertical-end", "Scroll active file to saved position", (evt: MouseEvent) => {
       this.triggerScrollpositionRestore();
     });
+
+    this.addCommand({
+      id: 'restore-scrollposition',
+      name: 'Scroll active file to saved position',
+      callback: () => {
+        this.triggerScrollpositionRestore();
+      },
+    });
     // TODO add class to poetentially hide the button
 
     // initially restore scroll position on all open editors
@@ -128,17 +136,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
         logDebug("saved modified data", this.data);
       });
     }, 350);
-  }
-
-  onSettingUpdate<key extends keyof ReScrollPluginSettings>(settingName: key, newValue: ReScrollPluginSettings[key]) {
-    switch (settingName) {
-      case "scrollInstantly":
-        if (newValue) {
-          this.ribbon.addClass("rescroll-hidden");
-        } else {
-          this.ribbon.removeClass("rescroll-hidden");
-        }
-    }
   }
 
   onunload() {}

@@ -33,7 +33,6 @@ export class RescrollSettingTab extends PluginSettingTab {
 
   private async saveSetting<key extends keyof ReScrollPluginSettings>(name: key, value: ReScrollPluginSettings[key]) {
     this.plugin.data.settings[name] = value;
-    this.plugin.onSettingUpdate(name, value)
     await this.plugin.saveData(this.plugin.data);
   }
 }
