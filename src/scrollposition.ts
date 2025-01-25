@@ -87,18 +87,14 @@ export class ReScroll {
     const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path);
     if (!lastPosition) return;
 
-    const updated = moment(lastPosition.updated)
-    const maxAge = moment().subtract(moment.duration(data.settings.maxAge.amount, data.settings.maxAge.unit));
+    const maxAge = new Date();
+    maxAge.setDate(maxAge.getDate() - data.settings.maxAge);
 
-    console.log('upmax', updated, maxAge)
-    if (updated < maxAge) {
-      console.log('TOO OLD', lastPosition)
-    }
-
-    if (currentScrollPosition === 0) {
+    if (lastPosition.updated > maxAge.getTime()) {
       logDebug("dispatching scrollIntoView", lastPosition);
-
       view.editor.scrollIntoView(lastPosition.editorRange, true);
+    } else {
+      logDebug(`Position for ${view.file?.path} was found, but considered too old. Not applying.`);
     }
   }
 

@@ -7,11 +7,7 @@ import translations from "./translations.json";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
-  maxAge: {
-    raw: "2 weeks",
-    unit: "weeks",
-    amount: "2",
-  },
+  maxAge: 14
 };
 
 const DEFAULT_DATA: ReScrollPluginData = {

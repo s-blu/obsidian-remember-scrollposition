@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting, moment } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting, moment } from "obsidian";
 import RememberScrollpositionPlugin from "./main";
 import { ReScrollPluginSettings } from "../interfaces/scrollposition.interface";
 import translations from "./translations.json";
@@ -26,31 +26,21 @@ export class RescrollSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Max Age for Scrolling Positions")
-      .setDesc(
-        "Configure how long a scroll position is applied before considered outdated. Leave empty to disable age check. Needs to conform moment.js duration format, i.e. 5 days; 3 weeks; 1 months",
-      )
-      .addText((text) =>
+      .setName(translations.settings.maxAge.name)
+      .setDesc(translations.settings.maxAge.description)
+      .addText((text) => {
         text
-          .setPlaceholder("7 days")
-          .setValue(this.plugin.data.settings.maxAge.raw)
-          .onChange((val) => {
-            const maxAgeParts = val.split(" ");
-            const amount = maxAgeParts[0]
-            const unit = maxAgeParts[1] as moment.unitOfTime.DurationConstructor;
-            if (!amount || !unit) {
-              // TODO error
-            } 
-            const maxAgeDuration = moment.duration(amount, unit);
-            if (maxAgeDuration.isValid()) {
-              this.saveSetting("maxAge", { raw: val, unit, amount})
-            } else {
-              // TODO show error
-            }
-          }),
-      );
+        .setValue("" + this.plugin.data.settings.maxAge)
+        .onChange((val) => {
+          const num = parseInt(val);
+          if (Number.isInteger(num) && num >= 0) {
+            this.saveSetting("maxAge", num);
+          } else {
+            new Notice(translations.settings.maxAge.error);
+          }
+        });
+      });
 
-    // TODO configure maxAge of scrolling position
     // TODO be able to exclude or include certain paths for saving only
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
   }

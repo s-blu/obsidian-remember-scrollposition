@@ -1,12 +1,8 @@
-import { EditorRange, moment } from "obsidian";
+import { EditorRange } from "obsidian";
 
 export interface ReScrollPluginSettings {
   scrollInstantly: boolean,
-  maxAge: {
-    raw: string,
-    unit: moment.unitOfTime.DurationConstructor,
-    amount: string
-  }
+  maxAge: number
 }
 
 export interface ReScrollPluginItem {
