@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import RememberScrollpositionPlugin from "./main";
 import { ReScrollPluginSettings } from "../interfaces/scrollposition.interface";
+import translations from "./translations.json"
 
 export class RescrollSettingTab extends PluginSettingTab {
   plugin: RememberScrollpositionPlugin;
@@ -16,8 +17,8 @@ export class RescrollSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("Scroll instantly")
-      .setDesc("Scroll instantly to saved position upon opening a note")
+      .setName(translations.settings.scrollInstantly.name)
+      .setDesc(translations.settings.scrollInstantly.description)
       .addToggle((toggle) => {
         toggle
           .setValue(this.plugin.data.settings.scrollInstantly)

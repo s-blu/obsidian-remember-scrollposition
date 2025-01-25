@@ -1,0 +1,9 @@
+{
+  "action_description": "Scroll active file to saved position",
+  "settings": {
+    "scrollInstantly": {
+      "name": "Scroll instantly",
+      "description": "Scroll instantly to saved position upon opening a note"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { RescrollSettingTab } from "./scrollposition-settings";
+import translations from "./translations.json"
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
@@ -26,13 +27,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.loadPluginData();
     this.addSettingTab(new RescrollSettingTab(this.app, this));
 
-    this.ribbon = this.addRibbonIcon("gallery-vertical-end", "Scroll active file to saved position", (evt: MouseEvent) => {
+    this.ribbon = this.addRibbonIcon("gallery-vertical-end", translations.action_description, (evt: MouseEvent) => {
       this.triggerScrollpositionRestore();
     });
 
     this.addCommand({
       id: 'restore-scrollposition',
-      name: 'Scroll active file to saved position',
+      name: translations.action_description,
       callback: () => {
         this.triggerScrollpositionRestore();
       },
