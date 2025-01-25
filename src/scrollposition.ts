@@ -13,15 +13,7 @@ export class ReScroll {
   ) {
     if (!view?.file) return;
 
-    const scrollInfo = view.editor.getScrollInfo();
-    console.log('editor scroll info', scrollInfo)
-
-  //   const topLine = view.editor.lineAtHeight(scrollInfo.top, "local");
-  // const bottomLine = view.editor.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
-  // console.log('editor scroll info', topLine, bottomLine)
-
-    // TODO check if you can get the line info from within official obsidian API
-    // @ts-ignore cm is not part of the official API and I feel bad
+    // @ts-ignore access to internal property
     const cm = view.editor?.cm;
 
     if (!cm) {
@@ -67,64 +59,14 @@ export class ReScroll {
 
     const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
     if (!currentLine) return null;
-
-    /** TODO You might be able to use the codemirror.viewport information to adjust the
-     * target line somewhat and allow configuring if we should scroll to top/center or bottom
-     * logDebug(scrollSnapshot.range.head, codemirror.viewport)
-     *  contentEl.getBoundingClientRect().top
-     */
-    logDebug(scrollSnapshot.range.head, codemirror.viewport, codemirror.visibleRanges);
-    logDebug(
-      codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head),
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.viewport.from),
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.viewport.to),
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.visibleRanges[0].from),
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.visibleRanges[0].to),
-      codemirror.viewportLineBlocks,
-      codemirror.moveToLineBoundary(scrollSnapshot.range, true)
-    );
-
-    logDebug(
-      "snapshot head line",
-      codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head),
-      scrollSnapshot
-    );
-
-
-    logDebug(
-      "viewport / visible Ranges lines",
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.viewport.from).number,
-      codemirror.viewState?.state?.doc?.lineAt(codemirror.viewport.to).number,
-      // codemirror.viewState?.state?.doc?.lineAt(codemirror.visibleRanges[0].from),
-      // codemirror.viewState?.state?.doc?.lineAt(codemirror.visibleRanges[0].to)
-    )
-
-    const moved = codemirror.moveToLineBoundary(scrollSnapshot.range, true, true);
-    logDebug(
-      "viewport lineblocks, moveToLineBoundary",
-      codemirror.viewportLineBlocks,
-      moved,
-      codemirror.viewState?.state?.doc?.lineAt(moved.from)
-    );
-
-    logDebug(
-      "///////// SNAPSHOT / MOVED /////////\n",
-      codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head),
-      codemirror.viewState?.state?.doc?.lineAt(moved.to)
-    )
-
-    logDebug(
-      "///////// SNAPSHOT -- MOVED /////////\n",
-      scrollSnapshot,
-      moved
-    )
+    console.log(scrollSnapshot, currentLine);
 
     return {
-      to: {
+      from: {
         line: currentLine.number,
         ch: 1,
       },
-      from: {
+      to: {
         line: currentLine.number,
         ch: 1,
       },
@@ -148,7 +90,7 @@ export class ReScroll {
     if (lastPosition && currentScrollPosition === 0) {
       logDebug("dispatching scrollIntoView", lastPosition);
 
-      view.editor.transaction({ selection: lastPosition.editorRange });
+      view.editor.scrollIntoView(lastPosition.editorRange, true);
     }
   }
 
