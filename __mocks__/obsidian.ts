@@ -14,6 +14,7 @@ export class Plugin {
   loadData() {
     return {};
   }
+  saveData() {}
 
   app = getMockApp();
 }
@@ -32,4 +33,27 @@ export class WorkspaceLeaf {
   }
 }
 
-export class PluginSettingTab {}
+export class PluginSettingTab {
+  containerEl = {
+    empty: jest.fn(),
+  };
+}
+
+export class Setting {
+  constructor() {}
+
+  setName() {
+    console.log('set name mock called')
+    return this;
+  }
+  setDesc() {
+    return this;
+  }
+
+  addText() {
+
+  }
+  addToggle() {}
+}
+
+export class Notice {}
