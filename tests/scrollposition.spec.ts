@@ -217,6 +217,45 @@ describe("RememberScrollposition", () => {
       expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
       expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
     });
+
+    it('should do nothing if updated date is older than max age', () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+      mockData.settings.maxAge = 7; 
+      const mockEditorRange = getMockEditorRange(100);
+
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - (mockData.settings.maxAge + 1))
+
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: oldDate.getTime(),
+      });
+
+      ReScroll.restoreScrollposition(mockView, mockData);
+
+      expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled()
+    })
+
+    it("should load last scroll position and call scrollIntoView, if max age is unset", () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+      mockData.settings.maxAge = null;
+      const mockEditorRange = getMockEditorRange(15);
+
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: Date.now(),
+      });
+
+      ReScroll.restoreScrollposition(mockView, mockData);
+
+      expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
+        mockEditorRange, true
+      );
+    });
   });
 
   describe("updatePathOfEntry", () => {

@@ -1,4 +1,4 @@
-import { MarkdownView} from "obsidian";
+import { MarkdownView } from "obsidian";
 import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
@@ -87,10 +87,14 @@ export class ReScroll {
     const lastPosition = ReScroll.getScrollpositionEntry(data, view.file?.path);
     if (!lastPosition) return;
 
-    const maxAge = new Date();
-    maxAge.setDate(maxAge.getDate() - data.settings.maxAge);
+    let isOutdated = false;
+    if (data.settings.maxAge) {
+      const maxAge = new Date();
+      maxAge.setDate(maxAge.getDate() - data.settings.maxAge);
+      isOutdated = lastPosition.updated < maxAge.getTime();
+    }
 
-    if (lastPosition.updated > maxAge.getTime()) {
+    if (!isOutdated) {
       logDebug("dispatching scrollIntoView", lastPosition);
       view.editor.scrollIntoView(lastPosition.editorRange, true);
     } else {

@@ -2,7 +2,7 @@ import { EditorRange } from "obsidian";
 
 export interface ReScrollPluginSettings {
   scrollInstantly: boolean,
-  maxAge: number
+  maxAge: number | null
 }
 
 export interface ReScrollPluginItem {
