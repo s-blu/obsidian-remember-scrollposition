@@ -43,6 +43,7 @@ export class RescrollSettingTab extends PluginSettingTab {
 
     // TODO be able to exclude or include certain paths for saving only
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
+    // TODO add setting to customize timeout time of scroll position saving
   }
 
   private async saveSetting<key extends keyof ReScrollPluginSettings>(name: key, value: ReScrollPluginSettings[key]) {

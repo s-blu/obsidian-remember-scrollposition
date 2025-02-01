@@ -42,17 +42,10 @@ export class PluginSettingTab {
 export class Setting {
   constructor() {}
 
-  setName() {
-    console.log('set name mock called')
-    return this;
-  }
-  setDesc() {
-    return this;
-  }
+  setName() {}
+  setDesc() {}
 
-  addText() {
-
-  }
+  addText() {}
   addToggle() {}
 }
 

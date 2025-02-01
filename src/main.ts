@@ -7,7 +7,7 @@ import translations from "./translations.json";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
-  maxAge: 14
+  maxAge: 14,
 };
 
 const DEFAULT_DATA: ReScrollPluginData = {
@@ -15,10 +15,10 @@ const DEFAULT_DATA: ReScrollPluginData = {
   scrollpositions: [],
 };
 
-// FIXME scroll position is not restored in read mode
+// FIXME scroll position is not saved/restored in read mode
+// FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
-  // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
 
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
@@ -34,7 +34,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.addCommand({
       id: "restore-scrollposition",
       name: translations.action_description,
-      callback: () => {
+      editorCallback: () => {
         this.triggerScrollpositionRestore();
       },
     });
@@ -67,13 +67,10 @@ export default class RememberScrollpositionPlugin extends Plugin {
             this.registerScrollListener(leaf);
             this.observedLeaves.push(id);
           }
-
-          // TODO clean up obsolete ids? Unregister those listeners?
         });
       }),
     );
 
-    // When focusing a leaf, restore its saved scroll position
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
         if (!this.data.settings.scrollInstantly) return;
@@ -98,13 +95,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
   triggerScrollpositionRestore() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) return;
-    // @ts-ignore cm is not part of the official API and I feel bad
-    const cm = view?.editor?.cm;
 
-    // TODO is cm still necessary?
-    if (cm) {
-      ReScroll.restoreScrollposition(view, this.data);
-    }
+    ReScroll.restoreScrollposition(view, this.data);
   }
 
   async updateData(modifiedData: ReScrollPluginData) {
@@ -118,15 +110,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     if (!leaf?.view || !(leaf.view instanceof MarkdownView)) return;
     const view = leaf.view as MarkdownView;
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
-    // @ts-ignore usage of internal property
-    const id = leaf?.id;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
-      this.savePositionOnEndOfScrolling(view, id);
+      this.savePositionOnEndOfScrolling(view);
     });
   }
 
-  savePositionOnEndOfScrolling(view: MarkdownView, id: string) {
+  savePositionOnEndOfScrolling(view: MarkdownView) {
     // Reset if we get another event in the timeout duration to only save when stop scrolling
     window.clearTimeout(this.scrollingDebounce);
 
@@ -140,8 +130,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
       });
     }, 350);
   }
-
-  onunload() {}
 
   async loadPluginData() {
     this.data = Object.assign({}, DEFAULT_DATA, await this.loadData());

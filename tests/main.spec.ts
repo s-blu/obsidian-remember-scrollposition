@@ -52,7 +52,7 @@ describe("main", () => {
     it("should add command to manually restore scroll position on active file", async () => {
       const cmdSpy = jest
         .spyOn(Plugin.prototype, "addCommand")
-        .mockImplementation(({ callback }) => callback && callback());
+        .mockImplementation(({ editorCallback }) => editorCallback && editorCallback({} as any, {} as any));
       const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
 
       await plugin.onload();
@@ -110,8 +110,10 @@ describe("main", () => {
         .mockImplementation((doc: any, event: any, cb: any) => {
           if (event === "scroll") callback = cb;
         });
-      const saveScrollPosSpy = jest.spyOn(ReScroll, "saveScrollPosition").mockImplementation((view, data, cb) => cb(data));
-      const saveSpy = jest.spyOn(Plugin.prototype, 'saveData')
+      const saveScrollPosSpy = jest
+        .spyOn(ReScroll, "saveScrollPosition")
+        .mockImplementation((view, data, cb) => cb(data));
+      const saveSpy = jest.spyOn(Plugin.prototype, "saveData");
       jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
       jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => {
         return [leaf];
@@ -125,7 +127,7 @@ describe("main", () => {
       jest.advanceTimersByTime(1000);
 
       expect(saveScrollPosSpy).toHaveBeenCalled();
-      expect(saveSpy).toHaveBeenCalled()
+      expect(saveSpy).toHaveBeenCalled();
     });
 
     it("should attempt to restore scroll position on active-leaf-change", async () => {
@@ -210,13 +212,13 @@ describe("main", () => {
       const mockLeaf2 = getMockWorkspaceLeaf("l2");
       const mockLeaf3 = getMockWorkspaceLeaf("l3");
 
-      const vaultOnSpy = jest.spyOn(plugin.app.workspace, "on").mockImplementation((event: any, cb: any) => {
+      jest.spyOn(plugin.app.workspace, "on").mockImplementation((event: any, cb: any) => {
         if (event === "layout-change") callback = cb;
 
         // to conform expected type
         return {} as any;
       });
-      jest.spyOn(plugin.app.workspace, 'onLayoutReady').mockImplementation(cb => cb())
+      jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
       const registerScrollSpy = jest.spyOn(plugin, "registerScrollListener");
 
       jest

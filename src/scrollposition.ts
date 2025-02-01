@@ -12,7 +12,6 @@ export class ReScroll {
     callback: (data: ReScrollPluginData) => void,
   ) {
     if (!view?.file) return;
-
     // @ts-ignore access to internal property
     const cm = view.editor?.cm;
 
@@ -59,7 +58,6 @@ export class ReScroll {
 
     const currentLine = codemirror.viewState?.state?.doc?.lineAt(scrollSnapshot.range.head);
     if (!currentLine) return null;
-    console.log(scrollSnapshot, currentLine);
 
     return {
       from: {
