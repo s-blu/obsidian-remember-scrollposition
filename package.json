@@ -1,6 +1,6 @@
 {
   "name": "obsidian-remember-scrollposition",
-  "version": "0.5.1",
+  "version": "1.0.0-SNAPSHOT",
   "description": "This obsidian plugin brings you back to your last scroll position in your notes",
   "main": "main.js",
   "scripts": {
