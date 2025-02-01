@@ -3,13 +3,17 @@ This is a community plugin for Obsidian (https://obsidian.md).
 
 Upon opening a note in Obsidian, your scroll position is set to the top of the document. For long notes that you wish to keep continue reading, this can be suboptimal.
 
-Remember Scrollposition saves your scroll positions in a note and restores it as soon as you open the note again to return you where you left off.
+Remember Scrollposition saves your scroll positions in a note and restores it as soon as you open the note again to return you where you left off. Optionally, you can configure to not restore your position automatically but only on usage of the ribbon icon or command. 
 
 ## Limitations
 
-**This is a work in progress**. While this plugin will stay small in functionality, it's planned to provide some settings to configure the behaviour of the plugin to your needs. Also, at the current time, the plugin fails to save the scroll position if the scrollbar is used.
+**This is a work in progress**. Following limitations are in place:
 
-This plugin is untested for mobile devices.
+- Does not work for notes in read view (Live Preview and Source works)
+- Some planned settings are not provided yet
+- A visual indicator of the saved scroll position is planned but not available yet
+
+This plugin is untested for mobile devices and will probably not work.
 
 ## Manually installing the plugin
 
