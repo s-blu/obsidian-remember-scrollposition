@@ -17,6 +17,13 @@ const DEFAULT_DATA: ReScrollPluginData = {
 
 // FIXME scroll position is not saved/restored in read mode
 // FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
+
+/* FIXME the plugin causes Violations on startup (maybe also on normal runs):
+[Violation] Forced reflow while executing JavaScript took 55ms
+[Violation] 'requestIdleCallback' handler took 101ms
+[Violation] 'requestIdleCallback' handler took 101ms
+[Violation] 'requestIdleCallback' handler took 81ms
+*/ 
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
 

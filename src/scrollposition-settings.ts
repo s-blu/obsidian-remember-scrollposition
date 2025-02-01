@@ -44,6 +44,7 @@ export class RescrollSettingTab extends PluginSettingTab {
     // TODO be able to exclude or include certain paths for saving only
     // TODO provide an option to correct saved line number of a certain degree to achieve more intuitive scrolling results
     // TODO add setting to customize timeout time of scroll position saving
+    // TODO add setting to (a) prefer cursor position if cursor is inside visibleRanges and (b) to ALWAYS use cursor position for saving, even if not visible (and to ignore scroll pos then)
   }
 
   private async saveSetting<key extends keyof ReScrollPluginSettings>(name: key, value: ReScrollPluginSettings[key]) {
