@@ -6,7 +6,7 @@ import {
   getMockView,
   mockRetrieveEditorRange,
 } from "./mock.utils";
-import { ReScrollPluginData } from "src/scrollposition.interface";
+import { ReScrollPluginData } from "interfaces/scrollposition.interface";
 
 describe("RememberScrollposition", () => {
   beforeEach(() => {
@@ -163,7 +163,7 @@ describe("RememberScrollposition", () => {
   });
 
   describe("restoreScrollposition", () => {
-    it("should load last scroll position and dispatch scrollIntoView effect to codemirror", () => {
+    it("should load last scroll position and call scrollIntoView", () => {
       const mockView = getMockView(undefined, 0);
       const mockData = getMockPluginData();
       const mockEditorRange = getMockEditorRange(15);
@@ -176,11 +176,8 @@ describe("RememberScrollposition", () => {
 
       ReScroll.restoreScrollposition(mockView, mockData);
 
-      // @ts-expect-error usage of inofficial API
-      expect(mockView.editor.cm.dispatch).toHaveBeenCalled();
       expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
-        mockEditorRange,
-        true,
+        mockEditorRange, true
       );
     });
 
@@ -219,6 +216,45 @@ describe("RememberScrollposition", () => {
       // @ts-expect-error usage of inofficial API
       expect(mockView.editor.cm.dispatch).not.toHaveBeenCalled();
       expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing if updated date is older than max age', () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+      mockData.settings.maxAge = 7; 
+      const mockEditorRange = getMockEditorRange(100);
+
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - (mockData.settings.maxAge + 1))
+
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: oldDate.getTime(),
+      });
+
+      ReScroll.restoreScrollposition(mockView, mockData);
+
+      expect(mockView.editor.scrollIntoView).not.toHaveBeenCalled()
+    })
+
+    it("should load last scroll position and call scrollIntoView, if max age is unset", () => {
+      const mockView = getMockView(undefined, 0);
+      const mockData = getMockPluginData();
+      mockData.settings.maxAge = null;
+      const mockEditorRange = getMockEditorRange(15);
+
+      mockData.scrollpositions.push({
+        editorRange: mockEditorRange,
+        path: mockView.file?.path ?? "",
+        updated: Date.now(),
+      });
+
+      ReScroll.restoreScrollposition(mockView, mockData);
+
+      expect(mockView.editor.scrollIntoView).toHaveBeenCalledWith(
+        mockEditorRange, true
+      );
     });
   });
 
