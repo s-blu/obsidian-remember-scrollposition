@@ -4,6 +4,7 @@ import { ReScrollPluginSettings, ReScrollPluginData } from "../interfaces/scroll
 import { logDebug } from "./debug-log";
 import { RescrollSettingTab } from "./scrollposition-settings";
 import translations from "./translations.json";
+import { examplePlugin } from "./view-plugin";
 
 const DEFAULT_SETTINGS: ReScrollPluginSettings = {
   scrollInstantly: true,
@@ -27,12 +28,17 @@ const DEFAULT_DATA: ReScrollPluginData = {
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
 
+  public viewplugin: any;
+
   private scrollingDebounce: NodeJS.Timeout;
   private observedLeaves: string[] = [];
 
   async onload() {
     await this.loadPluginData();
     this.addSettingTab(new RescrollSettingTab(this.app, this));
+
+    this.registerEditorExtension([examplePlugin]);
+
 
     this.addRibbonIcon("gallery-vertical-end", translations.action_description, (evt: MouseEvent) => {
       this.triggerScrollpositionRestore();
@@ -49,9 +55,20 @@ export default class RememberScrollpositionPlugin extends Plugin {
     // initially restore scroll position on all open editors
     // listen to scroll events on open editors
     this.app.workspace.onLayoutReady(() => {
+
+
+
+
       const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
+
+
+      // @ts-expect-error, not typed
+      const editorView = leaf.view.editor.cm as EditorView;
+      const plugin = editorView.plugin(examplePlugin);
+      plugin.setScrollCallback(this.savePositionOnEndOfScrolling)
+
         // @ts-ignore usage of internal property
         const id = leaf.id;
         if (!(view instanceof MarkdownView)) return;
@@ -119,23 +136,21 @@ export default class RememberScrollpositionPlugin extends Plugin {
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
-      this.savePositionOnEndOfScrolling(view);
+      console.log('scroll called')
+      // this.savePositionOnEndOfScrolling(view);
     });
   }
 
   savePositionOnEndOfScrolling(view: MarkdownView) {
-    // Reset if we get another event in the timeout duration to only save when stop scrolling
-    window.clearTimeout(this.scrollingDebounce);
+    console.log('savePositionOnEndOfScrolling', view)
+    if (!view) return;
 
-    this.scrollingDebounce = setTimeout(() => {
-      if (!view) return;
+    ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
+      this.updateData(modifiedData);
 
-      ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
-        this.updateData(modifiedData);
+      logDebug("saved modified data", this.data);
+    });
 
-        logDebug("saved modified data", this.data);
-      });
-    }, 350);
   }
 
   async loadPluginData() {
