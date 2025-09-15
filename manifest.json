@@ -1,7 +1,7 @@
 {
 	"id": "remember-scrollposition",
 	"name": "Remember Scrollposition",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Remembers the scroll position in your notes and returns you to your last position upon opening a note.",
 	"author": "s-blu",
