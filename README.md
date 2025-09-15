@@ -7,13 +7,11 @@ Remember Scrollposition saves your scroll positions in a note and restores it as
 
 ## Limitations
 
-**This is a work in progress**. Following limitations are in place:
+This is a very basic plugin, mainly supporting my personal flow of work. Following limitations are in place:
 
 - Does not work for notes in read view (Live Preview and Source works)
-- Some planned settings are not provided yet
-- A visual indicator of the saved scroll position is planned but not available yet
-
-This plugin is untested for mobile devices and will probably not work.
+- The scroll position save is an estimation, not a perfect match
+- This plugin is untested for mobile devices and will probably not work.
 
 ## Manually installing the plugin
 
