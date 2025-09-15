@@ -15,19 +15,10 @@ const DEFAULT_DATA: ReScrollPluginData = {
   scrollpositions: [],
 };
 
-// FIXME scroll position is not saved/restored in read mode
-// FIXME when switching the active leaf while scrolling, the scroll position of the previous leaf is not saved
-
-/* FIXME the plugin causes Violations on startup (maybe also on normal runs):
-[Violation] Forced reflow while executing JavaScript took 55ms
-[Violation] 'requestIdleCallback' handler took 101ms
-[Violation] 'requestIdleCallback' handler took 101ms
-[Violation] 'requestIdleCallback' handler took 81ms
-*/ 
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
 
-  private scrollingDebounce: NodeJS.Timeout;
+  private scrollingDebounces: { [key:string]: NodeJS.Timeout} = {};
   private observedLeaves: string[] = [];
 
   async onload() {
@@ -119,16 +110,20 @@ export default class RememberScrollpositionPlugin extends Plugin {
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
-      this.savePositionOnEndOfScrolling(view);
+      // @ts-ignore usage of internal property
+        const id = leaf.id;
+      this.savePositionOnEndOfScrolling(view, id);
     });
   }
 
-  savePositionOnEndOfScrolling(view: MarkdownView) {
+  savePositionOnEndOfScrolling(view: MarkdownView, id: string) {
     // Reset if we get another event in the timeout duration to only save when stop scrolling
-    window.clearTimeout(this.scrollingDebounce);
+    if (this.scrollingDebounces[id]) window.clearTimeout(this.scrollingDebounces[id]);
 
-    this.scrollingDebounce = setTimeout(() => {
+    this.scrollingDebounces[id] = setTimeout(() => {
       if (!view) return;
+
+      logDebug('onEndOfScrolling: Attempt to save scroll pos', id, view?.file?.path)
 
       ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
         this.updateData(modifiedData);

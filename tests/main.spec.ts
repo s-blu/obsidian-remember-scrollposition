@@ -124,8 +124,9 @@ describe("main", () => {
       expect(domEvSpy).toHaveBeenCalledWith(expect.anything(), "scroll", expect.any(Function));
 
       callback();
-      jest.advanceTimersByTime(1000);
 
+      expect(saveScrollPosSpy).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1000);
       expect(saveScrollPosSpy).toHaveBeenCalled();
       expect(saveSpy).toHaveBeenCalled();
     });
