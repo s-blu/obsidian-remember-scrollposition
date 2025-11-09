@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "This obsidian plugin brings you back to your last scroll position in your notes",
   "main": "main.js",
+  "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
@@ -15,18 +16,22 @@
   "devDependencies": {
     "@codemirror/state": "^6.5.1",
     "@codemirror/view": "^6.36.2",
+    "@eslint/js": "^9.39.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
     "builtin-modules": "3.3.0",
     "esbuild": "0.17.3",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "obsidian": "latest",
     "prettier": "^3.4.2",
     "ts-jest": "^29.2.5",
     "tslib": "2.4.0",
-    "typescript": "4.7.4"
+    "typescript": "4.8",
+    "typescript-eslint": "^8.46.3"
   }
 }
