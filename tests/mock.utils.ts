@@ -75,7 +75,7 @@ export function getMockWorkspaceLeaf(id: string) {
   leaf.view = getMockView()
   leaf.view.leaf = leaf;
 
-  // @ts-ignore internal property
+  // @ts-expect-error internal property
   leaf.id = id;
 
   return leaf;

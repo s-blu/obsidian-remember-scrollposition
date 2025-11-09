@@ -25,7 +25,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.loadPluginData();
     this.addSettingTab(new RescrollSettingTab(this.app, this));
 
-    this.addRibbonIcon("gallery-vertical-end", translations.action_description, (evt: MouseEvent) => {
+    this.addRibbonIcon("gallery-vertical-end", translations.action_description, () => {
       this.triggerScrollpositionRestore();
     });
 
@@ -43,7 +43,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
       const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
-        // @ts-ignore usage of internal property
+        // @ts-expect-error usage of internal property
         const id = leaf.id;
         if (!(view instanceof MarkdownView)) return;
         if (this.data.settings.scrollInstantly) {
@@ -59,7 +59,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
       this.app.workspace.on("layout-change", () => {
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
         activeLeaves.forEach((leaf) => {
-          // @ts-ignore usage of internal property
+          // @ts-expect-error usage of internal property
           const id = leaf.id;
           if (this.observedLeaves.indexOf(id) === -1) {
             this.registerScrollListener(leaf);
@@ -110,8 +110,8 @@ export default class RememberScrollpositionPlugin extends Plugin {
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
-      // @ts-ignore usage of internal property
-        const id = leaf.id;
+      // @ts-expect-error usage of internal property
+      const id = leaf.id;
       this.savePositionOnEndOfScrolling(view, id);
     });
   }

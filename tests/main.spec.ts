@@ -82,7 +82,7 @@ describe("main", () => {
       const domEvSpy = jest.spyOn(Plugin.prototype, "registerDomEvent").mockImplementation(() => {});
       const restoreScrollPosSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockReturnValue();
       jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
-      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => activeLeavesMock);
+      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation(() => activeLeavesMock);
 
       await plugin.onload();
 
@@ -96,9 +96,9 @@ describe("main", () => {
       let callback!: () => void;
       const leaf = new WorkspaceLeaf();
       leaf.view = new MarkdownView(leaf); //getMockView();
-      // @ts-ignore internal property
+      // @ts-expect-error internal property
       leaf.id = "mock";
-      // @ts-ignore internal property
+      // @ts-expect-error internal property
       leaf.view.contentEl = {
         querySelector: () => {
           return {} as Element;
@@ -115,7 +115,7 @@ describe("main", () => {
         .mockImplementation((view, data, cb) => cb(data));
       const saveSpy = jest.spyOn(Plugin.prototype, "saveData");
       jest.spyOn(plugin.app.workspace, "onLayoutReady").mockImplementation((cb) => cb());
-      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation((_) => {
+      jest.spyOn(plugin.app.workspace, "getLeavesOfType").mockImplementation(() => {
         return [leaf];
       });
 

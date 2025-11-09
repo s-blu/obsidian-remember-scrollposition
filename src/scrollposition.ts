@@ -12,7 +12,7 @@ export class ReScroll {
     callback: (data: ReScrollPluginData) => void,
   ): void {
     if (!view?.file) return;
-    // @ts-ignore access to internal property
+    // @ts-expect-error access to internal property
     const cm = view.editor?.cm;
 
     if (!cm) {
