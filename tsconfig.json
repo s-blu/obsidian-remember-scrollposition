@@ -22,5 +22,5 @@
   },
   "include": [
     "**/*.ts"
-, "eslint.config.js"  ]
+, "eslint.config.js", "esbuild.config.mjs"  ]
 }
