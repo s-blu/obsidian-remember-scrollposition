@@ -90,7 +90,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     );
   }
 
-  triggerScrollpositionRestore() {
+  triggerScrollpositionRestore(): void {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) return;
 
@@ -104,7 +104,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     await this.saveData(this.data);
   }
 
-  registerScrollListener(leaf: WorkspaceLeaf) {
+  registerScrollListener(leaf: WorkspaceLeaf): void {
     if (!leaf?.view || !(leaf.view instanceof MarkdownView)) return;
     const view = leaf.view;
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
@@ -116,7 +116,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     });
   }
 
-  savePositionOnEndOfScrolling(view: MarkdownView, id: string) {
+  savePositionOnEndOfScrolling(view: MarkdownView, id: string): void {
     // Reset if we get another event in the timeout duration to only save when stop scrolling
     if (this.scrollingDebounces[id]) window.clearTimeout(this.scrollingDebounces[id]);
 
@@ -133,7 +133,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     }, 350);
   }
 
-  async loadPluginData() {
+  async loadPluginData(): Promise<void> {
     this.data = Object.assign({}, DEFAULT_DATA, await this.loadData());
   }
 }

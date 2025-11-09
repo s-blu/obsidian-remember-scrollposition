@@ -1,5 +1,5 @@
-import { MarkdownView } from "obsidian";
-import { ReScrollPluginData } from "../interfaces/scrollposition.interface";
+import { EditorRange, MarkdownView } from "obsidian";
+import { ReScrollPluginData, ReScrollPluginItem } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
 
@@ -10,7 +10,7 @@ export class ReScroll {
     view: MarkdownView,
     data: ReScrollPluginData,
     callback: (data: ReScrollPluginData) => void,
-  ) {
+  ): void {
     if (!view?.file) return;
     // @ts-ignore access to internal property
     const cm = view.editor?.cm;
@@ -50,7 +50,7 @@ export class ReScroll {
     callback(data);
   }
 
-  static retrieveEditorRangeForCurrentPosition(codemirror: ObsidianCodemirror) {
+  static retrieveEditorRangeForCurrentPosition(codemirror: ObsidianCodemirror): null | EditorRange {
     if (!codemirror) return null;
 
     const scrollSnapshot = codemirror.scrollSnapshot()?.value;
@@ -71,7 +71,7 @@ export class ReScroll {
     };
   }
 
-  static restoreScrollposition(view: MarkdownView, data: ReScrollPluginData) {
+  static restoreScrollposition(view: MarkdownView, data: ReScrollPluginData): void {
     if (!view || !data) {
       console.warn("RememberScrollposition: restoreScrollposition was called with invalid parameters.");
       return;
@@ -105,7 +105,7 @@ export class ReScroll {
     oldName: string,
     newName: string | undefined,
     callback: (data: ReScrollPluginData) => void,
-  ) {
+  ): void {
     const entry = ReScroll.getScrollpositionEntry(data, oldName);
     if (!entry) return;
 
@@ -120,7 +120,7 @@ export class ReScroll {
     }
   }
 
-  static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => void) {
+  static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => void): void {
     if (!data?.scrollpositions) return;
 
     const index = data.scrollpositions.findIndex((p) => p.path === filepath);
@@ -130,8 +130,8 @@ export class ReScroll {
     callback(data);
   }
 
-  private static getScrollpositionEntry(data: ReScrollPluginData, filepath?: string) {
-    if (!filepath) return null;
+  private static getScrollpositionEntry(data: ReScrollPluginData, filepath?: string): ReScrollPluginItem | undefined {
+    if (!filepath) return;
     return data?.scrollpositions.find((p) => p.path === filepath);
   }
 }

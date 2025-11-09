@@ -47,7 +47,7 @@ export class RescrollSettingTab extends PluginSettingTab {
     // TODO add setting to (a) prefer cursor position if cursor is inside visibleRanges and (b) to ALWAYS use cursor position for saving, even if not visible (and to ignore scroll pos then)
   }
 
-  private async saveSetting<key extends keyof ReScrollPluginSettings>(name: key, value: ReScrollPluginSettings[key]) {
+  private async saveSetting<key extends keyof ReScrollPluginSettings>(name: key, value: ReScrollPluginSettings[key]): Promise<void> {
     this.plugin.data.settings[name] = value;
     await this.plugin.saveData(this.plugin.data);
   }
