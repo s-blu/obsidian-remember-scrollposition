@@ -31,10 +31,10 @@ export class RescrollSettingTab extends PluginSettingTab {
       .addText((text) => {
         text
         .setValue("" + this.plugin.data.settings.maxAge)
-        .onChange((val) => {
+        .onChange(async (val) => {
           const num = parseInt(val);
           if (Number.isInteger(num) && num >= 0) {
-            this.saveSetting("maxAge", num);
+            await this.saveSetting("maxAge", num);
           } else {
             new Notice(translations.settings.maxAge.error);
           }

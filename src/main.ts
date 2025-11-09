@@ -106,7 +106,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
   registerScrollListener(leaf: WorkspaceLeaf) {
     if (!leaf?.view || !(leaf.view instanceof MarkdownView)) return;
-    const view = leaf.view as MarkdownView;
+    const view = leaf.view;
     const scrollEl = view.contentEl.querySelector(".cm-scroller") as HTMLElement;
 
     this.registerDomEvent(scrollEl, "scroll", () => {
@@ -126,7 +126,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
       logDebug('onEndOfScrolling: Attempt to save scroll pos', id, view?.file?.path)
 
       ReScroll.saveScrollPosition(view, this.data, async (modifiedData) => {
-        this.updateData(modifiedData);
+        await this.updateData(modifiedData);
 
         logDebug("saved modified data", this.data);
       });
