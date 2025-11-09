@@ -19,7 +19,7 @@ export function mockRetrieveEditorRange(line?: number) {
   return jest.spyOn(ReScroll, "retrieveEditorRangeForCurrentPosition").mockReturnValue(getMockEditorRange(line));
 }
 
-export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
+export function getMockView(filepath = "mock/path.md", scrollTop = 222): MarkdownView {
   const viewObj = new MarkdownView(new WorkspaceLeaf());
 
   Object.assign(viewObj, {
@@ -40,7 +40,7 @@ export function getMockView(filepath = "mock/path.md", scrollTop = 222) {
   return viewObj;
 }
 
-export function getMockPluginData() {
+export function getMockPluginData(): ReScrollPluginData {
   return {
     settings: {
       scrollInstantly: true,
@@ -50,7 +50,7 @@ export function getMockPluginData() {
   } as ReScrollPluginData;
 }
 
-export function getMockApp() {
+export function getMockApp(): App {
   return {
     workspace: {
       on: jest.fn(),
@@ -70,7 +70,7 @@ export function getMockApp() {
   } as unknown as App;
 }
 
-export function getMockWorkspaceLeaf(id: string) {
+export function getMockWorkspaceLeaf(id: string): WorkspaceLeaf {
   const leaf = new WorkspaceLeaf();
   leaf.view = getMockView()
   leaf.view.leaf = leaf;

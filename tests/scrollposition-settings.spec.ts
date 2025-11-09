@@ -10,10 +10,10 @@ describe("RememberScrollposition Settings", () => {
   let nameSpy: jest.SpyInstance;
   let descSpy: jest.SpyInstance;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     app = getMockApp();
     plugin = new RememberScrollpositionPlugin(app, {} as any);
-    plugin.onload();
+    await plugin.onload();
 
     jest.resetAllMocks();
     nameSpy = jest.spyOn(Setting.prototype, "setName").mockReturnThis();

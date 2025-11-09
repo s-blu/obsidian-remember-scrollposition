@@ -44,7 +44,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
       activeLeaves.forEach((leaf) => {
         const view = leaf.view;
         // @ts-expect-error usage of internal property
-        const id = leaf.id;
+        const id = leaf.id as string;
         if (!(view instanceof MarkdownView)) return;
         if (this.data.settings.scrollInstantly) {
           ReScroll.restoreScrollposition(view, this.data);
@@ -60,7 +60,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
         const activeLeaves = this.app.workspace.getLeavesOfType("markdown");
         activeLeaves.forEach((leaf) => {
           // @ts-expect-error usage of internal property
-          const id = leaf.id;
+          const id = leaf.id as string;
           if (this.observedLeaves.indexOf(id) === -1) {
             this.registerScrollListener(leaf);
             this.observedLeaves.push(id);
@@ -79,13 +79,13 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.registerEvent(
       this.app.vault.on("rename", (file, oldName) => {
         const newName = file?.path;
-        ReScroll.updatePathOfEntry(this.data, oldName, newName, this.updateData);
+        ReScroll.updatePathOfEntry(this.data, oldName, newName, this.updateData.bind(this));
       }),
     );
 
     this.registerEvent(
       this.app.vault.on("delete", (deletedFile) => {
-        ReScroll.deleteEntry(this.data, deletedFile?.path, this.updateData);
+        ReScroll.deleteEntry(this.data, deletedFile?.path, this.updateData.bind(this));
       }),
     );
   }
@@ -97,7 +97,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
     ReScroll.restoreScrollposition(view, this.data);
   }
 
-  async updateData(modifiedData: ReScrollPluginData) {
+  async updateData(modifiedData: ReScrollPluginData): Promise<void> {
     if (!modifiedData) return;
 
     this.data = modifiedData;
@@ -111,7 +111,7 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
     this.registerDomEvent(scrollEl, "scroll", () => {
       // @ts-expect-error usage of internal property
-      const id = leaf.id;
+      const id = leaf.id as string;
       this.savePositionOnEndOfScrolling(view, id);
     });
   }
@@ -134,6 +134,6 @@ export default class RememberScrollpositionPlugin extends Plugin {
   }
 
   async loadPluginData(): Promise<void> {
-    this.data = Object.assign({}, DEFAULT_DATA, await this.loadData());
+    this.data = Object.assign({}, DEFAULT_DATA, await this.loadData()) as ReScrollPluginData;
   }
 }

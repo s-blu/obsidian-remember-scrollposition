@@ -9,11 +9,11 @@ export class ReScroll {
   static saveScrollPosition(
     view: MarkdownView,
     data: ReScrollPluginData,
-    callback: (data: ReScrollPluginData) => void,
+    callback: (data: ReScrollPluginData) => unknown,
   ): void {
     if (!view?.file) return;
     // @ts-expect-error access to internal property
-    const cm = view.editor?.cm;
+    const cm = view.editor?.cm as ObsidianCodemirror;
 
     if (!cm) {
       console.error(
@@ -104,7 +104,7 @@ export class ReScroll {
     data: ReScrollPluginData,
     oldName: string,
     newName: string | undefined,
-    callback: (data: ReScrollPluginData) => void,
+    callback: (data: ReScrollPluginData) => unknown,
   ): void {
     const entry = ReScroll.getScrollpositionEntry(data, oldName);
     if (!entry) return;
@@ -120,7 +120,7 @@ export class ReScroll {
     }
   }
 
-  static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => void): void {
+  static deleteEntry(data: ReScrollPluginData, filepath: string, callback: (data: ReScrollPluginData) => unknown): void {
     if (!data?.scrollpositions) return;
 
     const index = data.scrollpositions.findIndex((p) => p.path === filepath);
