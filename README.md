@@ -1,4 +1,4 @@
-# Obsidian Plugin Remember Scrollposition
+# Remember Scrollposition
 This is a community plugin for Obsidian (https://obsidian.md).
 
 Upon opening a note in Obsidian, your scroll position is set to the top of the document. For long notes that you wish to keep continue reading, this can be suboptimal.
@@ -13,9 +13,11 @@ This is a very basic plugin, mainly supporting my personal flow of work. Followi
 - The scroll position save is an estimation, not a perfect match
 - This plugin is untested for mobile devices and will probably not work.
 
-## Manually installing the plugin
+## Installing the Plugin
 
-Remember Scrollposition is not yet available through Obsidian directly.
+Search for "Remember Scrollposition" in the Obsidian Community Plugins.
+
+### Manually installing the plugin
 
 - Copy over `main.js`, `styles.css`, `manifest.json` from [releases](https://github.com/s-blu/obsidian-remember-scrollposition/releases) to your vault `VaultFolder/.obsidian/plugins/remember-scrollposition/`.
 
