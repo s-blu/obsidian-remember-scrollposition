@@ -4,7 +4,7 @@ import { logDebug } from "./debug-log";
 import { ObsidianCodemirror } from "../interfaces/codemirror.interface";
 
 export class ReScroll {
-  scrollingDebounce: NodeJS.Timeout;
+  scrollingDebounce: number;
 
   static saveScrollPosition(
     view: MarkdownView,

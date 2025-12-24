@@ -18,7 +18,7 @@ const DEFAULT_DATA: ReScrollPluginData = {
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
 
-  private scrollingDebounces: { [key:string]: NodeJS.Timeout} = {};
+  private scrollingDebounces: { [key:string]: number} = {};
   private observedLeaves: string[] = [];
 
   async onload() {
@@ -118,9 +118,9 @@ export default class RememberScrollpositionPlugin extends Plugin {
 
   savePositionOnEndOfScrolling(view: MarkdownView, id: string): void {
     // Reset if we get another event in the timeout duration to only save when stop scrolling
-    if (this.scrollingDebounces[id]) window.clearTimeout(this.scrollingDebounces[id]);
+    if (this.scrollingDebounces[id]) activeWindow.clearTimeout(this.scrollingDebounces[id]);
 
-    this.scrollingDebounces[id] = setTimeout(() => {
+    this.scrollingDebounces[id] = activeWindow.setTimeout(() => {
       if (!view) return;
 
       logDebug('onEndOfScrolling: Attempt to save scroll pos', id, view?.file?.path)
