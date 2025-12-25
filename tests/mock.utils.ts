@@ -32,6 +32,7 @@ export function getMockView(filepath = "mock/path.md", scrollTop = 222): Markdow
       scrollIntoView: jest.fn(),
       transaction: jest.fn()
     },
+    getViewType: () => "markdown", 
     contentEl: {
       querySelector: jest.fn().mockReturnValue({}),
     },

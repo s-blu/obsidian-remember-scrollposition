@@ -1,6 +1,6 @@
 import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import RememberScrollpositionPlugin from "../src/main";
-import { getMockApp, getMockWorkspaceLeaf } from "./mock.utils";
+import { getMockApp, getMockView, getMockWorkspaceLeaf } from "./mock.utils";
 import { ReScroll } from "../src/scrollposition";
 
 describe("main", () => {
@@ -52,7 +52,8 @@ describe("main", () => {
     it("should add command to manually restore scroll position on active file", async () => {
       const cmdSpy = jest
         .spyOn(Plugin.prototype, "addCommand")
-        .mockImplementation(({ editorCallback }) => editorCallback && editorCallback({} as any, {} as any));
+        .mockImplementation(({ editorCheckCallback }) => editorCheckCallback && (editorCheckCallback(false, {} as any, getMockView()) as any));
+        
       const restoreSpy = jest.spyOn(ReScroll, "restoreScrollposition").mockImplementation();
 
       await plugin.onload();
@@ -93,6 +94,8 @@ describe("main", () => {
 
     it("should attempt to save scroll position on scroll event after debounce", async () => {
       jest.useFakeTimers();
+      (global as any).activeWindow = window;
+
       let callback!: () => void;
       const leaf = new WorkspaceLeaf();
       leaf.view = new MarkdownView(leaf); //getMockView();
@@ -128,6 +131,7 @@ describe("main", () => {
       expect(saveScrollPosSpy).not.toHaveBeenCalled();
       jest.advanceTimersByTime(1000);
       expect(saveScrollPosSpy).toHaveBeenCalled();
+      jest.advanceTimersByTime(100);
       expect(saveSpy).toHaveBeenCalled();
     });
 
