@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
+import { Editor, MarkdownView, Plugin, WorkspaceLeaf } from "obsidian";
 import { ReScroll } from "./scrollposition";
 import { ReScrollPluginSettings, ReScrollPluginData } from "../interfaces/scrollposition.interface";
 import { logDebug } from "./debug-log";
@@ -18,7 +18,7 @@ const DEFAULT_DATA: ReScrollPluginData = {
 export default class RememberScrollpositionPlugin extends Plugin {
   public data: ReScrollPluginData;
 
-  private scrollingDebounces: { [key:string]: number} = {};
+  private scrollingDebounces: { [key: string]: number } = {};
   private observedLeaves: string[] = [];
 
   async onload() {
@@ -32,10 +32,17 @@ export default class RememberScrollpositionPlugin extends Plugin {
     this.addCommand({
       id: "restore-scrollposition",
       name: translations.action_description,
-      editorCallback: () => {
-        this.triggerScrollpositionRestore();
-      },
+      editorCheckCallback: (checking: boolean, editor: Editor, view: MarkdownView) => {
+        const isMarkdownFile = view.getViewType() === "markdown"
+
+        if (checking) {
+          return isMarkdownFile;
+        } else if (isMarkdownFile) {
+          this.triggerScrollpositionRestore();
+        }
+      }
     });
+
 
     // initially restore scroll position on all open editors
     // listen to scroll events on open editors
