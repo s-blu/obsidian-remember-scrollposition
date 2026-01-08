@@ -90,7 +90,7 @@ export class ReScroll {
       const maxAge = new Date();
       maxAge.setDate(maxAge.getDate() - data.settings.maxAge);
       isOutdated = lastPosition.updated < maxAge.getTime();
-    }
+    } 
 
     if (!isOutdated) {
       logDebug("dispatching scrollIntoView", lastPosition);

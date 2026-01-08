@@ -84,6 +84,29 @@ describe("RememberScrollposition Settings", () => {
     });
   });
 
+    it("should set max age setting to null if input is empty", () => {
+    let callback!: (val: string) => void;
+    const text: TextComponent = {
+      setValue: jest.fn().mockReturnThis(),
+      onChange: (cb: (value: string) => any) => {
+        callback = cb;
+        return text;
+      },
+    } as unknown as TextComponent;
+    jest.spyOn(Setting.prototype, "addText").mockImplementation((cb) => cb(text));
+    const saveDataSpy = jest.spyOn(plugin, "saveData");
+
+    new RescrollSettingTab(app, plugin).display();
+
+    callback("");
+
+    expect(saveDataSpy).toHaveBeenCalledWith({
+      scrollpositions: expect.anything(),
+      settings: { maxAge: null, scrollInstantly: expect.anything() },
+    });
+  });
+
+
   it("should not save invalid inputs to max age input", () => {
     let callback!: (val: string) => void;
     const text: TextComponent = {
